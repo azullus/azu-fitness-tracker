@@ -27,7 +27,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Personal fitness management PWA for a 2-person household in Edmonton, Alberta. The **web-app/** directory contains the primary Next.js application for tracking workouts, nutrition, weight, and pantry inventory.
+Personal fitness management PWA for a 2-person household. The **web-app/** directory contains the primary Next.js application for tracking workouts, nutrition, weight, and pantry inventory.
 
 **Primary Entry Point:** `web-app/` - Next.js 14 PWA (main application)
 
@@ -59,7 +59,6 @@ npm run build  # Production build
 | Her | Cardio, mobility, light strength | One-A-Day Women's + Metamucil | HIIT, yoga, toning |
 
 **Shared:**
-- Location: Edmonton, Alberta
 - Home gym with half rack, adjustable bench, barbell, dumbbells
 
 ## Dietary Preferences
@@ -193,7 +192,7 @@ Four agents in `.claude/agents/` for planning assistance:
 | `npm run build` | Production build |
 | `npm run lint` | Run ESLint |
 
-## Grocery Stores (Edmonton)
+## Grocery Shopping
 
 Shopping priority:
 1. **Costco** - Bulk proteins, pantry staples
