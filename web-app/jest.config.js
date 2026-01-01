@@ -7,6 +7,9 @@ const createJestConfig = nextJest({
 
 /** @type {import('jest').Config} */
 const customJestConfig = {
+  // Setup files to run before any modules are imported (for polyfills)
+  setupFiles: ['<rootDir>/jest.globals.js'],
+
   // Setup files to run after jest is initialized
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
 

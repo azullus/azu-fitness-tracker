@@ -3,12 +3,8 @@
 
 import '@testing-library/jest-dom';
 
-// Polyfill TextEncoder/TextDecoder FIRST (required by undici)
-import { TextEncoder, TextDecoder } from 'util';
-global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder;
-
-// Now import undici for Request/Response polyfills (needs TextEncoder)
+// Polyfill Request/Response using undici
+// (TextEncoder/TextDecoder already set in jest.globals.js)
 import { Request, Response, Headers, FormData } from 'undici';
 global.Request = Request;
 global.Response = Response;
