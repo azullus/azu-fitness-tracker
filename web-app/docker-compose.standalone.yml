@@ -25,7 +25,7 @@ services:
     volumes:
       - fitness-data:/app/data
     networks:
-      - traefik-public
+      - proxy
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.fitness.rule=Host(`${DOMAIN:-fitness.localhost}`)"
@@ -64,5 +64,5 @@ volumes:
     name: fitness-tracker-backups
 
 networks:
-  traefik-public:
+  proxy:
     external: true
