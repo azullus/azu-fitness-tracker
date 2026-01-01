@@ -1,0 +1,84 @@
+name: Docker Integration Tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'web-app/**'
+      - '.github/workflows/docker-integration-test.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'web-app/**'
+
+jobs:
+  docker-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          cd web-app
+          docker build -t fitness-tracker-test \
+            --build-arg NEXT_PUBLIC_APP_URL=http://localhost:3000 \
+            --build-arg NEXT_PUBLIC_APP_NAME="Fitness Tracker Test" \
+            .
+
+      - name: Start container
+        run: |
+          docker run -d \
+            --name fitness-test \
+            -p 3000:3000 \
+            -e DATABASE_TYPE=sqlite \
+            -e DATABASE_PATH=/app/data \
+            -e NODE_ENV=production \
+            fitness-tracker-test
+
+          # Wait for container to be healthy
+          timeout 60 sh -c 'until docker exec fitness-test wget -q --spider http://127.0.0.1:3000/; do sleep 2; done'
+
+      - name: Test API endpoints
+        run: |
+          # Test health check
+          curl -f http://localhost:3000/ || exit 1
+
+          # Test persons API (should return demo data)
+          curl -f http://localhost:3000/api/persons || exit 1
+
+          # Test that DELETE without auth fails properly
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE "http://localhost:3000/api/persons?id=test")
+          if [ "$STATUS" != "401" ] && [ "$STATUS" != "403" ]; then
+            echo "Expected 401/403 for unauthorized DELETE, got $STATUS"
+            exit 1
+          fi
+
+      - name: Check environment variables in container
+        run: |
+          docker exec fitness-test env | grep DATABASE_TYPE
+          docker exec fitness-test env | grep DATABASE_TYPE | grep -q "sqlite" || exit 1
+
+      - name: Verify SQLite database exists
+        run: |
+          docker exec fitness-test ls -la /app/data/
+          docker exec fitness-test test -f /app/data/fitness.db || exit 1
+
+      - name: Check compiled code has SQLite checks
+        run: |
+          # Verify the route exists
+          docker exec fitness-test test -f /app/.next/server/app/api/persons/route.js || exit 1
+
+          # Verify compiled code has isSQLiteEnabled calls
+          docker exec fitness-test cat /app/.next/server/app/api/persons/route.js | grep -q "ki()" || exit 1
+
+      - name: Show container logs on failure
+        if: failure()
+        run: docker logs fitness-test
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker stop fitness-test || true
+          docker rm fitness-test || true
