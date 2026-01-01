@@ -1,6 +1,18 @@
 # Fitness Tracker PWA
 
-Personal fitness management Progressive Web App for tracking workouts, nutrition, weight, and pantry inventory. Designed for individuals or households who want comprehensive fitness and nutrition tracking.
+> Personal fitness management Progressive Web App for tracking workouts, nutrition, weight, and pantry inventory.
+
+[![Release](https://img.shields.io/github/v/release/azullus/fitness-tracker?logo=github)](https://github.com/azullus/fitness-tracker/releases)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js&logoColor=white)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![PWA](https://img.shields.io/badge/PWA-Enabled-5A0FC8?logo=pwa&logoColor=white)]()
+[![License](https://img.shields.io/github/license/azullus/fitness-tracker)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/azullus/fitness-tracker?style=flat)](https://github.com/azullus/fitness-tracker/stargazers)
+[![Issues](https://img.shields.io/github/issues/azullus/fitness-tracker)](https://github.com/azullus/fitness-tracker/issues)
+[![Last Commit](https://img.shields.io/github/last-commit/azullus/fitness-tracker)](https://github.com/azullus/fitness-tracker/commits/main)
+
+Designed for individuals or households who want comprehensive fitness and nutrition tracking.
 
 ## Features
 
