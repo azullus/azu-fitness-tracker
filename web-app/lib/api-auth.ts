@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
+import { isSQLiteEnabled, getPersonById } from './database';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -105,6 +106,12 @@ export async function checkHouseholdAccess(
   userId: string,
   householdId: string
 ): Promise<boolean> {
+  // If using SQLite, allow all authenticated users
+  // (SQLite is single-household, shared locally)
+  if (isSQLiteEnabled()) {
+    return true;
+  }
+
   if (!isSupabaseConfigured()) {
     return true; // Allow in demo mode
   }
@@ -128,6 +135,12 @@ export async function checkPersonAccess(
   userId: string,
   personId: string
 ): Promise<boolean> {
+  // If using SQLite, allow all authenticated users to manage their persons
+  // (SQLite doesn't have user-specific data, it's all local)
+  if (isSQLiteEnabled()) {
+    return true;
+  }
+
   if (!isSupabaseConfigured()) {
     return true; // Allow in demo mode
   }
