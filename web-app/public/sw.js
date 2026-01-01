@@ -198,9 +198,11 @@ async function cacheFirstWithNetworkUpdate(request, cacheName) {
   // Start network fetch in background to update cache
   const networkFetch = fetch(request)
     .then((networkResponse) => {
-      if (networkResponse.ok) {
+      if (networkResponse && networkResponse.ok) {
+        // Clone before using to avoid "body already used" error
+        const responseToCache = networkResponse.clone();
         caches.open(cacheName).then((cache) => {
-          cache.put(request, networkResponse.clone());
+          cache.put(request, responseToCache);
         });
       }
       return networkResponse;
