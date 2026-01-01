@@ -6,8 +6,14 @@ import '@testing-library/jest-dom';
 // Polyfill for Request/Response in Node.js test environment
 // This is needed for testing Next.js API routes and rate limiting
 import { TextEncoder, TextDecoder } from 'util';
+import { Request, Response, Headers, FormData } from 'undici';
+
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
+global.Request = Request;
+global.Response = Response;
+global.Headers = Headers;
+global.FormData = FormData;
 
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
