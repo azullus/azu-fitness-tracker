@@ -1,6 +1,6 @@
 # Fitness Tracker PWA
 
-Personal fitness management Progressive Web App for tracking workouts, nutrition, weight, and pantry inventory. Designed for a 2-person household in Edmonton, Alberta.
+Personal fitness management Progressive Web App for tracking workouts, nutrition, weight, and pantry inventory. Designed for individuals or households who want comprehensive fitness and nutrition tracking.
 
 ## Features
 
@@ -11,7 +11,8 @@ Personal fitness management Progressive Web App for tracking workouts, nutrition
 - **Meal Planning**: Track daily meals with nutrition breakdown
 - **Pantry**: Inventory management with low-stock alerts
 - **Weight Tracking**: Historical charts and trend analysis
-- **Demo Mode**: Full functionality without login (Taylor/Dylan test users)
+- **Household Management**: Support for multiple people with individual tracking
+- **Demo Mode**: Full functionality without login (test users included)
 - **PWA**: Installable, offline-capable, mobile-optimized
 
 ## Tech Stack
@@ -102,6 +103,8 @@ Click "Skip for now" on the login page to use demo mode with pre-populated data:
 - 30 days of weight history
 - Sample workouts and meals
 - Full pantry inventory
+
+Demo mode uses browser localStorage and is fully functional without authentication.
 
 ## Environment Variables
 
@@ -215,35 +218,73 @@ The app uses Next.js standalone output and can deploy to:
 
 **Note**: This app is designed for personal/household use, not multi-tenant SaaS.
 
-## Household Profile
+## Household Management
 
-Optimized for a 2-person household with:
-- **Him**: Powerlifting focus (squat/bench/deadlift), 140-180g protein daily
-- **Her**: Cardio/mobility focus (HIIT, yoga, toning), 140-180g protein daily
-- Shared home gym with half rack, adjustable bench, barbell, dumbbells
-- Dietary preferences: white rice only, PB Fit powder, Built Marshmallow bars
-- Allergy: HIM has banana allergy (no raw bananas, substitute yellow kiwi)
+The app supports multiple household members with individual tracking:
 
-## Training Schedules
+- **Person Profiles**: Track age, height, weight, BMI, calorie targets
+- **Training Focus**: Customize workout types (powerlifting, cardio, mobility, general)
+- **Workout Days**: Set individual training schedules (1-7 days per week)
+- **Isolation**: Each person's data is tracked separately
+- **Switching**: Easy switching between household members
 
-### His Schedule (Powerlifting - 4 days)
-| Mon | Tue | Wed | Thu | Fri | Sat/Sun |
-|-----|-----|-----|-----|-----|---------|
-| Squat | Bench | REST | Deadlift | Volume | REST |
+Add and manage household members in **Settings → Household**.
 
-### Her Schedule (Cardio/Mobility - 5 days)
-| Mon | Tue | Wed | Thu | Fri | Sat/Sun |
-|-----|-----|-----|-----|-----|---------|
-| HIIT + Core | Lower + Mobility | Cardio Circuit | Upper + Core | Yoga/Recovery | REST |
+## Pre-Built Content
 
-## Grocery Stores (Edmonton)
+### Workouts (30+ Routines)
 
-Shopping priority:
-1. **Costco** - Bulk proteins, pantry staples
-2. **Safeway** - Sale meats, fresh produce
-3. **Superstore** - Budget items, PC alternatives
+**Strength Training:**
+- Full body compound lifts
+- Upper/lower splits
+- Push/pull/legs routines
+- Powerlifting focused (squat/bench/deadlift)
 
-Weekly budget: $150-200 CAD for 2 people
+**Cardio:**
+- HIIT circuits
+- Steady-state cardio
+- Tabata intervals
+
+**Mobility:**
+- Yoga flows
+- Dynamic stretching
+- Recovery routines
+
+### Recipes (100+ Options)
+
+**Breakfast:** High-protein options, oatmeal, smoothie bowls, egg dishes
+
+**Lunch:** Salads, wraps, bowls, quick meals
+
+**Dinner:** Chicken, beef, pork, seafood, vegetarian options
+
+**Snacks:** Protein-rich snacks, quick bites
+
+All recipes include:
+- Macro breakdown (calories, protein, carbs, fat, fiber)
+- Ingredient lists
+- Step-by-step instructions
+- Serving sizes
+
+## Customization
+
+### Add Your Own Recipes
+1. Go to **Recipes** → **New Recipe**
+2. Enter name, category, ingredients, instructions
+3. Add nutrition info (optional - can calculate from ingredients)
+4. Save and use in meal planning
+
+### Create Custom Workouts
+1. Go to **Workouts** → **Routines** → **Custom**
+2. Add exercises with sets/reps/weight
+3. Save routine for future use
+4. Track completion and progress
+
+### Adjust Nutrition Targets
+1. Go to **Settings** → **Household**
+2. Edit person profile
+3. Update daily calorie target, macro goals
+4. Targets are used in dashboard progress tracking
 
 ## Testing
 
@@ -282,8 +323,7 @@ Coverage: 119 tests across 4 test suites
 ## Support & Documentation
 
 - **Deployment Guide**: [DEPLOY.md](DEPLOY.md)
-- **Project Context**: [../CLAUDE.md](../CLAUDE.md)
-- **License**: Personal/household use only
+- **License**: MIT License - free for personal and commercial use
 
 ## Production Status
 
