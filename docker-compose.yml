@@ -18,9 +18,21 @@ services:
       - NODE_ENV=production
       - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
       - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.fitness.rule=Host(`fitness.cosmicbytez.ca`)"
+      - "traefik.http.routers.fitness.entrypoints=websecure"
+      - "traefik.http.routers.fitness.tls.certresolver=letsencrypt"
+      - "traefik.http.services.fitness.loadbalancer.server.port=3000"
+    networks:
+      - proxy
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/"]
       interval: 30s
       timeout: 10s
       start_period: 10s
       retries: 3
+
+networks:
+  proxy:
+    external: true
