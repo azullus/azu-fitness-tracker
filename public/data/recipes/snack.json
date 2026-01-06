@@ -1,0 +1,154 @@
+[
+  {
+    "id": "snack-001",
+    "name": "Protein Energy Balls",
+    "category": "Snack",
+    "prep_time_min": 15,
+    "cook_time_min": 0,
+    "servings": 12,
+    "calories": 120,
+    "protein_g": 6,
+    "carbs_g": 14,
+    "fat_g": 6,
+    "fiber_g": 2,
+    "ingredients": [
+      { "amount": "1", "unit": "cup", "item": "rolled oats" },
+      { "amount": "1/2", "unit": "cup", "item": "peanut butter" },
+      { "amount": "1/3", "unit": "cup", "item": "honey" },
+      { "amount": "1", "unit": "scoop", "item": "chocolate protein powder" },
+      { "amount": "1/4", "unit": "cup", "item": "mini chocolate chips" },
+      { "amount": "2", "unit": "tbsp", "item": "chia seeds" }
+    ],
+    "instructions": [
+      "Combine all ingredients in a large bowl and mix well.",
+      "Refrigerate for 15-30 minutes to firm up.",
+      "Roll into 12 balls, about 1 inch each.",
+      "Store in the refrigerator for up to 1 week."
+    ],
+    "tags": ["no-cook", "meal-prep-friendly", "portable"]
+  },
+  {
+    "id": "snack-002",
+    "name": "Greek Yogurt with Almonds",
+    "category": "Snack",
+    "prep_time_min": 2,
+    "cook_time_min": 0,
+    "servings": 1,
+    "calories": 220,
+    "protein_g": 18,
+    "carbs_g": 12,
+    "fat_g": 12,
+    "fiber_g": 2,
+    "ingredients": [
+      { "amount": "1", "unit": "cup", "item": "Greek yogurt (plain, 2%)" },
+      { "amount": "1/4", "unit": "cup", "item": "almonds" },
+      { "amount": "1", "unit": "tsp", "item": "honey" }
+    ],
+    "instructions": [
+      "Add Greek yogurt to a bowl.",
+      "Top with almonds.",
+      "Drizzle with honey and serve."
+    ],
+    "tags": ["no-cook", "quick", "high-protein"]
+  },
+  {
+    "id": "snack-003",
+    "name": "Hummus with Veggie Sticks",
+    "category": "Snack",
+    "prep_time_min": 10,
+    "cook_time_min": 0,
+    "servings": 2,
+    "calories": 180,
+    "protein_g": 6,
+    "carbs_g": 22,
+    "fat_g": 8,
+    "fiber_g": 6,
+    "ingredients": [
+      { "amount": "1/2", "unit": "cup", "item": "hummus" },
+      { "amount": "1", "unit": "medium", "item": "carrot, cut into sticks" },
+      { "amount": "1", "unit": "medium", "item": "cucumber, cut into sticks" },
+      { "amount": "1", "unit": "medium", "item": "bell pepper, sliced" },
+      { "amount": "1", "unit": "cup", "item": "cherry tomatoes" }
+    ],
+    "instructions": [
+      "Wash and cut all vegetables into sticks or bite-sized pieces.",
+      "Place hummus in a small bowl.",
+      "Arrange vegetables around the hummus for dipping."
+    ],
+    "tags": ["no-cook", "vegan", "high-fiber"]
+  },
+  {
+    "id": "snack-004",
+    "name": "Cottage Cheese with Fruit",
+    "category": "Snack",
+    "prep_time_min": 3,
+    "cook_time_min": 0,
+    "servings": 1,
+    "calories": 200,
+    "protein_g": 20,
+    "carbs_g": 18,
+    "fat_g": 4,
+    "fiber_g": 2,
+    "ingredients": [
+      { "amount": "1", "unit": "cup", "item": "cottage cheese (low-fat)" },
+      { "amount": "1/2", "unit": "cup", "item": "pineapple chunks" },
+      { "amount": "1", "unit": "tbsp", "item": "sunflower seeds" }
+    ],
+    "instructions": [
+      "Add cottage cheese to a bowl.",
+      "Top with pineapple chunks.",
+      "Sprinkle sunflower seeds on top."
+    ],
+    "tags": ["no-cook", "quick", "high-protein"]
+  },
+  {
+    "id": "snack-005",
+    "name": "Apple Slices with Almond Butter",
+    "category": "Snack",
+    "prep_time_min": 5,
+    "cook_time_min": 0,
+    "servings": 1,
+    "calories": 280,
+    "protein_g": 7,
+    "carbs_g": 32,
+    "fat_g": 16,
+    "fiber_g": 5,
+    "ingredients": [
+      { "amount": "1", "unit": "medium", "item": "apple" },
+      { "amount": "2", "unit": "tbsp", "item": "almond butter" },
+      { "amount": "1", "unit": "tsp", "item": "cinnamon" }
+    ],
+    "instructions": [
+      "Core and slice apple into wedges.",
+      "Serve with almond butter for dipping.",
+      "Sprinkle with cinnamon if desired."
+    ],
+    "tags": ["no-cook", "quick", "healthy-fats"]
+  },
+  {
+    "id": "snack-006",
+    "name": "Hard Boiled Eggs",
+    "category": "Snack",
+    "prep_time_min": 2,
+    "cook_time_min": 12,
+    "servings": 2,
+    "calories": 140,
+    "protein_g": 12,
+    "carbs_g": 1,
+    "fat_g": 10,
+    "fiber_g": 0,
+    "ingredients": [
+      { "amount": "2", "unit": "large", "item": "eggs" },
+      { "amount": "1", "unit": "pinch", "item": "salt" },
+      { "amount": "1", "unit": "pinch", "item": "pepper" }
+    ],
+    "instructions": [
+      "Place eggs in a single layer in a saucepan and cover with water by 1 inch.",
+      "Bring to a boil over high heat.",
+      "Remove from heat, cover, and let stand for 10-12 minutes.",
+      "Transfer eggs to ice water bath for 5 minutes.",
+      "Peel and season with salt and pepper."
+    ],
+    "tags": ["high-protein", "low-carb", "meal-prep-friendly", "keto-friendly"]
+  }
+]

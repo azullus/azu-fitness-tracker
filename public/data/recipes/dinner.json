@@ -1,0 +1,163 @@
+[
+  {
+    "id": "dinner-001",
+    "name": "Baked Salmon with Asparagus",
+    "category": "Dinner",
+    "prep_time_min": 10,
+    "cook_time_min": 20,
+    "servings": 2,
+    "calories": 450,
+    "protein_g": 42,
+    "carbs_g": 12,
+    "fat_g": 26,
+    "fiber_g": 4,
+    "ingredients": [
+      { "amount": "2", "unit": "fillets", "item": "salmon (6 oz each)" },
+      { "amount": "1", "unit": "lb", "item": "asparagus, trimmed" },
+      { "amount": "2", "unit": "tbsp", "item": "olive oil" },
+      { "amount": "3", "unit": "cloves", "item": "garlic, minced" },
+      { "amount": "1", "unit": "medium", "item": "lemon" },
+      { "amount": "1", "unit": "tsp", "item": "dried dill" },
+      { "amount": "1", "unit": "pinch", "item": "salt and pepper" }
+    ],
+    "instructions": [
+      "Preheat oven to 400F.",
+      "Place salmon and asparagus on a lined baking sheet.",
+      "Drizzle with olive oil and season with garlic, dill, salt, and pepper.",
+      "Squeeze lemon juice over everything and place lemon slices on salmon.",
+      "Bake for 15-20 minutes until salmon flakes easily.",
+      "Serve immediately."
+    ],
+    "tags": ["high-protein", "low-carb", "omega-3", "sheet-pan"]
+  },
+  {
+    "id": "dinner-002",
+    "name": "Lean Beef Stir Fry",
+    "category": "Dinner",
+    "prep_time_min": 15,
+    "cook_time_min": 12,
+    "servings": 2,
+    "calories": 420,
+    "protein_g": 38,
+    "carbs_g": 28,
+    "fat_g": 18,
+    "fiber_g": 5,
+    "ingredients": [
+      { "amount": "10", "unit": "oz", "item": "sirloin steak, sliced thin" },
+      { "amount": "2", "unit": "cups", "item": "broccoli florets" },
+      { "amount": "1", "unit": "cup", "item": "snap peas" },
+      { "amount": "1", "unit": "medium", "item": "bell pepper, sliced" },
+      { "amount": "3", "unit": "tbsp", "item": "low-sodium soy sauce" },
+      { "amount": "1", "unit": "tbsp", "item": "sesame oil" },
+      { "amount": "2", "unit": "cloves", "item": "garlic, minced" },
+      { "amount": "1", "unit": "tbsp", "item": "ginger, minced" }
+    ],
+    "instructions": [
+      "Heat sesame oil in a wok or large skillet over high heat.",
+      "Add beef and stir fry for 2-3 minutes until browned. Remove and set aside.",
+      "Add garlic and ginger, cook 30 seconds.",
+      "Add broccoli, snap peas, and bell pepper. Stir fry 4-5 minutes.",
+      "Return beef to the pan.",
+      "Add soy sauce and toss to combine.",
+      "Serve over rice or cauliflower rice."
+    ],
+    "tags": ["high-protein", "quick", "asian-inspired"]
+  },
+  {
+    "id": "dinner-003",
+    "name": "Turkey Meatballs with Zucchini Noodles",
+    "category": "Dinner",
+    "prep_time_min": 20,
+    "cook_time_min": 25,
+    "servings": 4,
+    "calories": 380,
+    "protein_g": 35,
+    "carbs_g": 18,
+    "fat_g": 20,
+    "fiber_g": 4,
+    "ingredients": [
+      { "amount": "1", "unit": "lb", "item": "ground turkey" },
+      { "amount": "1/4", "unit": "cup", "item": "breadcrumbs" },
+      { "amount": "1", "unit": "large", "item": "egg" },
+      { "amount": "2", "unit": "cloves", "item": "garlic, minced" },
+      { "amount": "1", "unit": "tsp", "item": "Italian seasoning" },
+      { "amount": "4", "unit": "medium", "item": "zucchini, spiralized" },
+      { "amount": "2", "unit": "cups", "item": "marinara sauce" },
+      { "amount": "1/4", "unit": "cup", "item": "Parmesan cheese" }
+    ],
+    "instructions": [
+      "Preheat oven to 400F.",
+      "Mix turkey, breadcrumbs, egg, garlic, and Italian seasoning.",
+      "Form into 16 meatballs and place on a lined baking sheet.",
+      "Bake for 20-25 minutes until cooked through.",
+      "Heat marinara sauce in a large pan.",
+      "Saute zucchini noodles for 2-3 minutes until slightly softened.",
+      "Serve meatballs over zoodles with marinara and Parmesan."
+    ],
+    "tags": ["high-protein", "low-carb", "italian-inspired"]
+  },
+  {
+    "id": "dinner-004",
+    "name": "Grilled Chicken Breast with Sweet Potato",
+    "category": "Dinner",
+    "prep_time_min": 10,
+    "cook_time_min": 35,
+    "servings": 2,
+    "calories": 480,
+    "protein_g": 45,
+    "carbs_g": 42,
+    "fat_g": 14,
+    "fiber_g": 6,
+    "ingredients": [
+      { "amount": "2", "unit": "medium", "item": "chicken breasts (6 oz each)" },
+      { "amount": "2", "unit": "medium", "item": "sweet potatoes" },
+      { "amount": "2", "unit": "cups", "item": "green beans" },
+      { "amount": "2", "unit": "tbsp", "item": "olive oil" },
+      { "amount": "1", "unit": "tsp", "item": "paprika" },
+      { "amount": "1", "unit": "tsp", "item": "garlic powder" },
+      { "amount": "1", "unit": "pinch", "item": "salt and pepper" }
+    ],
+    "instructions": [
+      "Preheat oven to 425F.",
+      "Pierce sweet potatoes and microwave for 5 minutes to start cooking.",
+      "Season chicken with paprika, garlic powder, salt, and pepper.",
+      "Grill chicken for 6-7 minutes per side until internal temp reaches 165F.",
+      "Toss green beans with olive oil and roast for 15 minutes.",
+      "Slice sweet potatoes and drizzle with remaining olive oil.",
+      "Serve chicken with sweet potato and green beans."
+    ],
+    "tags": ["high-protein", "balanced", "meal-prep-friendly"]
+  },
+  {
+    "id": "dinner-005",
+    "name": "Shrimp and Vegetable Skewers",
+    "category": "Dinner",
+    "prep_time_min": 20,
+    "cook_time_min": 10,
+    "servings": 2,
+    "calories": 320,
+    "protein_g": 36,
+    "carbs_g": 16,
+    "fat_g": 14,
+    "fiber_g": 4,
+    "ingredients": [
+      { "amount": "12", "unit": "oz", "item": "large shrimp, peeled and deveined" },
+      { "amount": "1", "unit": "medium", "item": "zucchini, chunked" },
+      { "amount": "1", "unit": "medium", "item": "red onion, chunked" },
+      { "amount": "1", "unit": "cup", "item": "cherry tomatoes" },
+      { "amount": "2", "unit": "tbsp", "item": "olive oil" },
+      { "amount": "2", "unit": "cloves", "item": "garlic, minced" },
+      { "amount": "1", "unit": "tsp", "item": "lemon zest" },
+      { "amount": "1", "unit": "tbsp", "item": "fresh parsley, chopped" }
+    ],
+    "instructions": [
+      "Soak wooden skewers in water for 20 minutes (or use metal).",
+      "Combine olive oil, garlic, and lemon zest in a bowl.",
+      "Thread shrimp and vegetables onto skewers, alternating.",
+      "Brush with garlic-lemon oil mixture.",
+      "Grill over medium-high heat for 3-4 minutes per side.",
+      "Garnish with fresh parsley and serve."
+    ],
+    "tags": ["high-protein", "low-carb", "grilling", "quick"]
+  }
+]

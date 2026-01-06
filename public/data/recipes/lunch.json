@@ -1,0 +1,159 @@
+[
+  {
+    "id": "lunch-001",
+    "name": "Grilled Chicken Salad",
+    "category": "Lunch",
+    "prep_time_min": 15,
+    "cook_time_min": 15,
+    "servings": 1,
+    "calories": 420,
+    "protein_g": 42,
+    "carbs_g": 18,
+    "fat_g": 22,
+    "fiber_g": 6,
+    "ingredients": [
+      { "amount": "6", "unit": "oz", "item": "chicken breast" },
+      { "amount": "4", "unit": "cups", "item": "mixed greens" },
+      { "amount": "1/2", "unit": "cup", "item": "cherry tomatoes, halved" },
+      { "amount": "1/4", "unit": "cup", "item": "cucumber, sliced" },
+      { "amount": "1/4", "unit": "cup", "item": "red onion, sliced" },
+      { "amount": "2", "unit": "tbsp", "item": "olive oil" },
+      { "amount": "1", "unit": "tbsp", "item": "balsamic vinegar" },
+      { "amount": "1/4", "unit": "cup", "item": "feta cheese" }
+    ],
+    "instructions": [
+      "Season chicken breast with salt and pepper.",
+      "Grill chicken over medium-high heat for 6-7 minutes per side until internal temp reaches 165F.",
+      "Let chicken rest for 5 minutes, then slice.",
+      "Arrange mixed greens on a plate.",
+      "Top with tomatoes, cucumber, red onion, and sliced chicken.",
+      "Drizzle with olive oil and balsamic vinegar.",
+      "Sprinkle feta cheese on top."
+    ],
+    "tags": ["high-protein", "low-carb", "meal-prep-friendly"]
+  },
+  {
+    "id": "lunch-002",
+    "name": "Turkey Wrap",
+    "category": "Lunch",
+    "prep_time_min": 10,
+    "cook_time_min": 0,
+    "servings": 1,
+    "calories": 380,
+    "protein_g": 32,
+    "carbs_g": 28,
+    "fat_g": 16,
+    "fiber_g": 4,
+    "ingredients": [
+      { "amount": "1", "unit": "large", "item": "whole wheat tortilla" },
+      { "amount": "4", "unit": "oz", "item": "sliced turkey breast" },
+      { "amount": "1", "unit": "slice", "item": "Swiss cheese" },
+      { "amount": "1/4", "unit": "medium", "item": "avocado, sliced" },
+      { "amount": "1/2", "unit": "cup", "item": "spinach" },
+      { "amount": "2", "unit": "tbsp", "item": "hummus" },
+      { "amount": "2", "unit": "slices", "item": "tomato" }
+    ],
+    "instructions": [
+      "Spread hummus evenly over the tortilla.",
+      "Layer turkey, cheese, avocado, spinach, and tomato.",
+      "Fold in the sides and roll tightly.",
+      "Cut in half diagonally and serve."
+    ],
+    "tags": ["no-cook", "high-protein", "quick"]
+  },
+  {
+    "id": "lunch-003",
+    "name": "Quinoa Buddha Bowl",
+    "category": "Lunch",
+    "prep_time_min": 15,
+    "cook_time_min": 20,
+    "servings": 2,
+    "calories": 480,
+    "protein_g": 18,
+    "carbs_g": 58,
+    "fat_g": 20,
+    "fiber_g": 12,
+    "ingredients": [
+      { "amount": "1", "unit": "cup", "item": "quinoa" },
+      { "amount": "1", "unit": "can", "item": "chickpeas, drained" },
+      { "amount": "2", "unit": "cups", "item": "roasted sweet potato cubes" },
+      { "amount": "2", "unit": "cups", "item": "kale, chopped" },
+      { "amount": "1/2", "unit": "cup", "item": "shredded carrots" },
+      { "amount": "1/4", "unit": "cup", "item": "tahini" },
+      { "amount": "2", "unit": "tbsp", "item": "lemon juice" },
+      { "amount": "1", "unit": "tbsp", "item": "olive oil" }
+    ],
+    "instructions": [
+      "Cook quinoa according to package directions.",
+      "Roast sweet potato cubes at 400F for 20 minutes.",
+      "Massage kale with olive oil and a pinch of salt.",
+      "Make dressing by whisking tahini with lemon juice and 2 tbsp water.",
+      "Divide quinoa between two bowls.",
+      "Arrange chickpeas, sweet potato, kale, and carrots on top.",
+      "Drizzle with tahini dressing."
+    ],
+    "tags": ["vegan", "high-fiber", "meal-prep-friendly"]
+  },
+  {
+    "id": "lunch-004",
+    "name": "Tuna Salad Lettuce Wraps",
+    "category": "Lunch",
+    "prep_time_min": 10,
+    "cook_time_min": 0,
+    "servings": 1,
+    "calories": 320,
+    "protein_g": 38,
+    "carbs_g": 8,
+    "fat_g": 16,
+    "fiber_g": 2,
+    "ingredients": [
+      { "amount": "1", "unit": "can", "item": "tuna in water, drained" },
+      { "amount": "2", "unit": "tbsp", "item": "Greek yogurt" },
+      { "amount": "1", "unit": "tbsp", "item": "Dijon mustard" },
+      { "amount": "2", "unit": "tbsp", "item": "celery, diced" },
+      { "amount": "1", "unit": "tbsp", "item": "red onion, diced" },
+      { "amount": "4", "unit": "large", "item": "butter lettuce leaves" },
+      { "amount": "1", "unit": "pinch", "item": "salt and pepper" }
+    ],
+    "instructions": [
+      "Combine tuna, Greek yogurt, mustard, celery, and onion in a bowl.",
+      "Season with salt and pepper to taste.",
+      "Spoon tuna mixture into lettuce leaves.",
+      "Serve immediately."
+    ],
+    "tags": ["no-cook", "low-carb", "high-protein", "keto-friendly"]
+  },
+  {
+    "id": "lunch-005",
+    "name": "Chicken Burrito Bowl",
+    "category": "Lunch",
+    "prep_time_min": 15,
+    "cook_time_min": 15,
+    "servings": 2,
+    "calories": 520,
+    "protein_g": 40,
+    "carbs_g": 52,
+    "fat_g": 18,
+    "fiber_g": 10,
+    "ingredients": [
+      { "amount": "8", "unit": "oz", "item": "chicken breast" },
+      { "amount": "1", "unit": "cup", "item": "brown rice, cooked" },
+      { "amount": "1", "unit": "cup", "item": "black beans" },
+      { "amount": "1/2", "unit": "cup", "item": "corn" },
+      { "amount": "1/2", "unit": "cup", "item": "pico de gallo" },
+      { "amount": "1/4", "unit": "cup", "item": "shredded cheese" },
+      { "amount": "1/4", "unit": "cup", "item": "Greek yogurt (sour cream sub)" },
+      { "amount": "1", "unit": "tbsp", "item": "taco seasoning" }
+    ],
+    "instructions": [
+      "Season chicken with taco seasoning.",
+      "Grill or pan-fry chicken until cooked through, about 6-7 minutes per side.",
+      "Slice chicken into strips.",
+      "Divide rice between two bowls.",
+      "Top with black beans, corn, chicken, pico de gallo.",
+      "Add cheese and Greek yogurt.",
+      "Serve with lime wedges if desired."
+    ],
+    "tags": ["high-protein", "meal-prep-friendly", "customizable"]
+  }
+]

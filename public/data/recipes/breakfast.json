@@ -1,0 +1,148 @@
+[
+  {
+    "id": "breakfast-001",
+    "name": "Protein Oatmeal Bowl",
+    "category": "Breakfast",
+    "prep_time_min": 5,
+    "cook_time_min": 10,
+    "servings": 1,
+    "calories": 420,
+    "protein_g": 32,
+    "carbs_g": 48,
+    "fat_g": 12,
+    "fiber_g": 6,
+    "ingredients": [
+      { "amount": "1", "unit": "cup", "item": "rolled oats" },
+      { "amount": "1", "unit": "scoop", "item": "vanilla protein powder" },
+      { "amount": "1", "unit": "tbsp", "item": "almond butter" },
+      { "amount": "1/2", "unit": "cup", "item": "blueberries" },
+      { "amount": "1", "unit": "tbsp", "item": "honey" },
+      { "amount": "2", "unit": "cups", "item": "water" }
+    ],
+    "instructions": [
+      "Bring water to a boil in a medium saucepan.",
+      "Add oats and reduce heat to medium-low. Cook for 5-7 minutes, stirring occasionally.",
+      "Remove from heat and stir in protein powder until well combined.",
+      "Transfer to a bowl and top with almond butter, blueberries, and honey."
+    ],
+    "tags": ["high-protein", "quick", "meal-prep-friendly"]
+  },
+  {
+    "id": "breakfast-002",
+    "name": "Greek Yogurt Parfait",
+    "category": "Breakfast",
+    "prep_time_min": 5,
+    "cook_time_min": 0,
+    "servings": 1,
+    "calories": 380,
+    "protein_g": 28,
+    "carbs_g": 42,
+    "fat_g": 10,
+    "fiber_g": 4,
+    "ingredients": [
+      { "amount": "1", "unit": "cup", "item": "Greek yogurt (2%)" },
+      { "amount": "1/2", "unit": "cup", "item": "granola" },
+      { "amount": "1/2", "unit": "cup", "item": "mixed berries" },
+      { "amount": "1", "unit": "tbsp", "item": "honey" },
+      { "amount": "1", "unit": "tbsp", "item": "chia seeds" }
+    ],
+    "instructions": [
+      "Add half the Greek yogurt to a glass or bowl.",
+      "Layer with half the granola and berries.",
+      "Repeat layers with remaining yogurt, granola, and berries.",
+      "Drizzle with honey and sprinkle chia seeds on top."
+    ],
+    "tags": ["no-cook", "high-protein", "quick"]
+  },
+  {
+    "id": "breakfast-003",
+    "name": "Veggie Egg White Scramble",
+    "category": "Breakfast",
+    "prep_time_min": 10,
+    "cook_time_min": 8,
+    "servings": 1,
+    "calories": 280,
+    "protein_g": 30,
+    "carbs_g": 12,
+    "fat_g": 12,
+    "fiber_g": 3,
+    "ingredients": [
+      { "amount": "6", "unit": "large", "item": "egg whites" },
+      { "amount": "1", "unit": "whole", "item": "egg" },
+      { "amount": "1/2", "unit": "cup", "item": "spinach" },
+      { "amount": "1/4", "unit": "cup", "item": "bell peppers, diced" },
+      { "amount": "2", "unit": "tbsp", "item": "onion, diced" },
+      { "amount": "1/4", "unit": "cup", "item": "feta cheese" },
+      { "amount": "1", "unit": "tsp", "item": "olive oil" }
+    ],
+    "instructions": [
+      "Heat olive oil in a non-stick skillet over medium heat.",
+      "Saute onion and bell peppers for 3-4 minutes until softened.",
+      "Add spinach and cook until wilted, about 1 minute.",
+      "Pour in egg whites and whole egg, stirring gently.",
+      "Cook until eggs are set, about 3-4 minutes.",
+      "Top with feta cheese and serve."
+    ],
+    "tags": ["high-protein", "low-carb", "keto-friendly"]
+  },
+  {
+    "id": "breakfast-004",
+    "name": "Avocado Toast with Eggs",
+    "category": "Breakfast",
+    "prep_time_min": 5,
+    "cook_time_min": 5,
+    "servings": 1,
+    "calories": 450,
+    "protein_g": 18,
+    "carbs_g": 35,
+    "fat_g": 28,
+    "fiber_g": 10,
+    "ingredients": [
+      { "amount": "2", "unit": "slices", "item": "whole grain bread" },
+      { "amount": "1", "unit": "medium", "item": "avocado" },
+      { "amount": "2", "unit": "large", "item": "eggs" },
+      { "amount": "1", "unit": "pinch", "item": "red pepper flakes" },
+      { "amount": "1", "unit": "pinch", "item": "salt and pepper" },
+      { "amount": "1", "unit": "tsp", "item": "everything bagel seasoning" }
+    ],
+    "instructions": [
+      "Toast bread until golden brown.",
+      "While bread toasts, fry or poach eggs to your preference.",
+      "Mash avocado and spread evenly on toast.",
+      "Top each slice with an egg.",
+      "Season with salt, pepper, red pepper flakes, and everything bagel seasoning."
+    ],
+    "tags": ["healthy-fats", "quick", "vegetarian"]
+  },
+  {
+    "id": "breakfast-005",
+    "name": "Banana Protein Pancakes",
+    "category": "Breakfast",
+    "prep_time_min": 5,
+    "cook_time_min": 10,
+    "servings": 2,
+    "calories": 340,
+    "protein_g": 28,
+    "carbs_g": 38,
+    "fat_g": 8,
+    "fiber_g": 4,
+    "ingredients": [
+      { "amount": "2", "unit": "medium", "item": "bananas, ripe" },
+      { "amount": "4", "unit": "large", "item": "eggs" },
+      { "amount": "1", "unit": "scoop", "item": "vanilla protein powder" },
+      { "amount": "1/2", "unit": "tsp", "item": "cinnamon" },
+      { "amount": "1", "unit": "tsp", "item": "vanilla extract" },
+      { "amount": "1", "unit": "tbsp", "item": "maple syrup" }
+    ],
+    "instructions": [
+      "Mash bananas in a bowl until smooth.",
+      "Whisk in eggs, protein powder, cinnamon, and vanilla extract.",
+      "Heat a non-stick pan over medium heat.",
+      "Pour 1/4 cup batter per pancake onto the pan.",
+      "Cook until bubbles form on top, about 2 minutes, then flip.",
+      "Cook another 1-2 minutes until golden.",
+      "Serve with maple syrup."
+    ],
+    "tags": ["high-protein", "gluten-free", "meal-prep-friendly"]
+  }
+]
