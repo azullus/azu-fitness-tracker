@@ -129,11 +129,31 @@ CREATE TABLE IF NOT EXISTS grocery_items (
 -- INDEXES
 -- ============================================
 
+-- Person lookups
+CREATE INDEX IF NOT EXISTS idx_persons_name ON persons(name);
+
+-- Weight and workout logs
 CREATE INDEX IF NOT EXISTS idx_weight_logs_person_date ON weight_logs(person_id, date DESC);
 CREATE INDEX IF NOT EXISTS idx_workout_logs_person_date ON workout_logs(person_id, date DESC);
 CREATE INDEX IF NOT EXISTS idx_workout_exercises_person_day ON workout_exercises(person_id, day_of_week);
+
+-- Meal plans - composite for common queries
 CREATE INDEX IF NOT EXISTS idx_meal_plans_date ON meal_plans(date);
+CREATE INDEX IF NOT EXISTS idx_meal_plans_date_type ON meal_plans(date, meal_type);
+CREATE INDEX IF NOT EXISTS idx_meal_plans_recipe ON meal_plans(recipe_id);
+CREATE INDEX IF NOT EXISTS idx_meal_plans_created_by ON meal_plans(created_by);
+
+-- Recipes
 CREATE INDEX IF NOT EXISTS idx_recipes_category ON recipes(category);
+CREATE INDEX IF NOT EXISTS idx_recipes_created_by ON recipes(created_by);
+
+-- Pantry items - for sorting and filtering
+CREATE INDEX IF NOT EXISTS idx_pantry_category_item ON pantry_items(category, item);
+CREATE INDEX IF NOT EXISTS idx_pantry_created_by ON pantry_items(created_by);
+
+-- Grocery items
+CREATE INDEX IF NOT EXISTS idx_grocery_category ON grocery_items(category);
+CREATE INDEX IF NOT EXISTS idx_grocery_created_by ON grocery_items(created_by);
 
 -- ============================================
 -- ROW LEVEL SECURITY (RLS)
