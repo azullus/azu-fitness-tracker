@@ -473,7 +473,7 @@ export function PersonProvider({ children }: PersonProviderProps) {
 
       setIsLoading(true);
 
-      // CHECK DEMO MODE FIRST - takes precedence over authentication
+      // Check localStorage flags
       let demoModeActive = false;
       let onboardingComplete = false;
       try {
@@ -483,27 +483,18 @@ export function PersonProvider({ children }: PersonProviderProps) {
         // Failed to check localStorage
       }
 
-      // If demo mode is active, use demo data regardless of auth state
-      if (demoModeActive) {
-        setIsDemoMode(true);
-        if (onboardingComplete) {
-          // Load rich demo data immediately
-          setPersons(DEMO_PERSONS);
-          setHousehold(DEMO_HOUSEHOLD);
-          setCurrentPersonState(DEMO_PERSONS[0]);
-          setIsLoading(false);
-          return;
-        } else {
-          // Show onboarding with skip option
-          setShowOnboarding(true);
-          setOnboardingMode('demo');
-          setIsLoading(false);
-          return;
-        }
-      }
-
-      // AUTHENTICATED USER: Load from Supabase, show onboarding if no persons exist
+      // AUTHENTICATED USER: Always load from Supabase, clear demo mode if set
+      // Authentication takes precedence over demo mode
       if (isAuthenticated && isAuthEnabled && supabase) {
+        // Clear demo mode for authenticated users
+        if (demoModeActive) {
+          try {
+            localStorage.removeItem(DEMO_MODE_KEY);
+          } catch {
+            // Failed to clear localStorage
+          }
+        }
+        setIsDemoMode(false);
         try {
           // Load persons from Supabase with retry for session timing issues
           let loadResult = await loadPersons();
@@ -596,7 +587,26 @@ export function PersonProvider({ children }: PersonProviderProps) {
         }
       }
 
-      // NOT AUTHENTICATED: Use localStorage flow (demo mode already handled above)
+      // NOT AUTHENTICATED: Check demo mode flag, then localStorage flow
+      // If demo mode is active for non-authenticated users, use demo data
+      if (demoModeActive) {
+        setIsDemoMode(true);
+        if (onboardingComplete) {
+          // Load rich demo data immediately
+          setPersons(DEMO_PERSONS);
+          setHousehold(DEMO_HOUSEHOLD);
+          setCurrentPersonState(DEMO_PERSONS[0]);
+          setIsLoading(false);
+          return;
+        } else {
+          // Show onboarding with skip option
+          setShowOnboarding(true);
+          setOnboardingMode('demo');
+          setIsLoading(false);
+          return;
+        }
+      }
+
       // Try to load saved persons from localStorage first
       let savedPersons: Person[] | null = null;
       let savedHousehold: Household | null = null;
