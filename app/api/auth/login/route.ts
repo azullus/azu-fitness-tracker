@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
+import { applyRateLimit, RateLimitPresets } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
+    // Apply strict rate limiting for login attempts (10/minute)
+    const rateLimitResponse = applyRateLimit(request, RateLimitPresets.AUTH);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
     if (!isSupabaseConfigured()) {
       return NextResponse.json(
         { success: false, error: 'Supabase is not configured' },

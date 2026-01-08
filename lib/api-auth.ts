@@ -5,9 +5,22 @@ import { isSQLiteEnabled } from './database';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+// Check if demo mode is explicitly enabled
+// IMPORTANT: Demo mode must be explicitly enabled via environment variable
+// This prevents accidental exposure of unprotected APIs
+export const isDemoModeEnabled = (): boolean => {
+  return process.env.DEMO_MODE === 'true' || process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
+};
+
 // Check if Supabase is configured
 export const isSupabaseConfigured = (): boolean => {
   return Boolean(supabaseUrl && supabaseAnonKey);
+};
+
+// Check if app should allow unauthenticated access
+// Either SQLite mode (local-only) or explicit demo mode
+export const allowUnauthenticatedAccess = (): boolean => {
+  return isSQLiteEnabled() || isDemoModeEnabled();
 };
 
 // Create a Supabase client for server-side use
@@ -28,14 +41,20 @@ export interface AuthResult {
 
 // Get authentication from request
 export async function getAuthFromRequest(request: NextRequest): Promise<AuthResult> {
-  // If Supabase is not configured, skip auth (demo mode)
-  if (!isSupabaseConfigured()) {
+  // If SQLite mode or explicit demo mode, allow unauthenticated access
+  if (allowUnauthenticatedAccess()) {
     return { authenticated: true };
+  }
+
+  // Supabase must be configured if not in demo/SQLite mode
+  if (!isSupabaseConfigured()) {
+    // Neither Supabase nor demo mode - deny access
+    return { authenticated: false, error: 'Authentication not configured. Set DEMO_MODE=true for demo access.' };
   }
 
   const supabase = createServerSupabaseClient();
   if (!supabase) {
-    return { authenticated: true }; // Allow in demo mode
+    return { authenticated: false, error: 'Failed to create auth client' };
   }
 
   // Get the authorization header
@@ -46,9 +65,8 @@ export async function getAuthFromRequest(request: NextRequest): Promise<AuthResu
     request.cookies.get('sb-access-token')?.value;
 
   if (!accessToken) {
-    // No token - check if this is demo mode or require auth
-    // For now, allow requests without auth in demo mode
-    return { authenticated: true };
+    // No token provided - require authentication
+    return { authenticated: false, error: 'No authentication token provided' };
   }
 
   try {
@@ -183,8 +201,8 @@ export interface ExtendedAuthResult extends AuthResult {
 export async function authenticateRequest(
   request: NextRequest
 ): Promise<{ auth: ExtendedAuthResult } | { error: NextResponse }> {
-  // If Supabase is not configured, this is demo mode - allow all requests
-  if (!isSupabaseConfigured()) {
+  // If SQLite mode or explicit demo mode enabled, allow all requests
+  if (allowUnauthenticatedAccess()) {
     return {
       auth: {
         authenticated: true,
@@ -194,22 +212,6 @@ export async function authenticateRequest(
   }
 
   const authResult = await getAuthFromRequest(request);
-
-  // Check if there's a valid token but authentication failed
-  const authHeader = request.headers.get('authorization');
-  const accessToken = authHeader?.replace('Bearer ', '') ||
-    request.cookies.get('sb-access-token')?.value;
-
-  // If no token provided and Supabase is configured, treat as demo mode request
-  // This allows the app to work without auth while still supporting authenticated users
-  if (!accessToken) {
-    return {
-      auth: {
-        authenticated: true,
-        isDemoMode: true,
-      },
-    };
-  }
 
   // Token was provided but auth failed
   if (!authResult.authenticated) {

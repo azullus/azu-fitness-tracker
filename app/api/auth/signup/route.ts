@@ -1,5 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { applyRateLimit, RateLimitPresets } from '@/lib/rate-limit';
+
+// Password validation helper
+function validatePassword(password: string): { valid: boolean; error?: string } {
+  if (password.length < 8) {
+    return { valid: false, error: 'Password must be at least 8 characters' };
+  }
+  if (!/[A-Z]/.test(password)) {
+    return { valid: false, error: 'Password must contain at least one uppercase letter' };
+  }
+  if (!/[a-z]/.test(password)) {
+    return { valid: false, error: 'Password must contain at least one lowercase letter' };
+  }
+  if (!/[0-9]/.test(password)) {
+    return { valid: false, error: 'Password must contain at least one number' };
+  }
+  return { valid: true };
+}
 
 /**
  * POST /api/auth/signup
@@ -8,6 +26,12 @@ import { createClient } from '@supabase/supabase-js';
  * This replaces the disabled database trigger by creating profile/household in application code.
  */
 export async function POST(request: NextRequest) {
+  // Apply strict rate limiting for signup attempts (10/minute)
+  const rateLimitResponse = applyRateLimit(request, RateLimitPresets.AUTH);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   // Use runtime env vars (non-NEXT_PUBLIC prefixed) to avoid build-time inlining
   // Fall back to NEXT_PUBLIC vars for backwards compatibility
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -28,6 +52,15 @@ export async function POST(request: NextRequest) {
     if (!email || !password) {
       return NextResponse.json(
         { success: false, error: 'Email and password are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate password strength
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+      return NextResponse.json(
+        { success: false, error: passwordValidation.error },
         { status: 400 }
       );
     }
