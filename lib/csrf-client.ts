@@ -6,6 +6,7 @@
  */
 
 import { CSRF_CONFIG } from './csrf';
+import { supabase } from './supabase';
 
 /**
  * Get CSRF token from cookies on the client side
@@ -160,3 +161,124 @@ export function createCSRFFetch() {
  * Pre-configured API client with CSRF protection
  */
 export const api = createCSRFFetch();
+
+/**
+ * Get current auth token from Supabase session
+ */
+async function getAuthToken(): Promise<string | null> {
+  if (!supabase) {
+    return null;
+  }
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Enhanced fetch function that includes both CSRF token and auth token
+ *
+ * Usage:
+ * ```typescript
+ * const response = await authFetch('/api/persons', {
+ *   method: 'POST',
+ *   headers: { 'Content-Type': 'application/json' },
+ *   body: JSON.stringify(data),
+ * });
+ * ```
+ */
+export async function authFetch(
+  input: RequestInfo | URL,
+  init?: RequestInit
+): Promise<Response> {
+  const method = init?.method?.toUpperCase() || 'GET';
+
+  // Get auth token
+  const authToken = await getAuthToken();
+
+  // Build headers
+  let headers: HeadersInit = init?.headers || {};
+
+  // Add auth token if available
+  if (authToken) {
+    if (headers instanceof Headers) {
+      headers.set('Authorization', `Bearer ${authToken}`);
+    } else if (Array.isArray(headers)) {
+      headers = [...headers, ['Authorization', `Bearer ${authToken}`]];
+    } else {
+      headers = {
+        ...headers,
+        'Authorization': `Bearer ${authToken}`,
+      };
+    }
+  }
+
+  // Add CSRF token for state-changing methods
+  const protectedMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
+  if (protectedMethods.includes(method)) {
+    headers = withCSRFHeaders(headers);
+  }
+
+  const enhancedInit: RequestInit = {
+    ...init,
+    headers,
+    credentials: 'same-origin',
+  };
+
+  return fetch(input, enhancedInit);
+}
+
+/**
+ * Create a fetch wrapper that includes both CSRF and auth tokens
+ * Useful for creating API clients that need authentication
+ */
+export function createAuthFetch() {
+  return {
+    get: (url: string, init?: Omit<RequestInit, 'method'>) =>
+      authFetch(url, { ...init, method: 'GET' }),
+
+    post: (url: string, body?: unknown, init?: Omit<RequestInit, 'method' | 'body'>) =>
+      authFetch(url, {
+        ...init,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...init?.headers,
+        },
+        body: body !== undefined ? JSON.stringify(body) : undefined,
+      }),
+
+    put: (url: string, body?: unknown, init?: Omit<RequestInit, 'method' | 'body'>) =>
+      authFetch(url, {
+        ...init,
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...init?.headers,
+        },
+        body: body !== undefined ? JSON.stringify(body) : undefined,
+      }),
+
+    patch: (url: string, body?: unknown, init?: Omit<RequestInit, 'method' | 'body'>) =>
+      authFetch(url, {
+        ...init,
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...init?.headers,
+        },
+        body: body !== undefined ? JSON.stringify(body) : undefined,
+      }),
+
+    delete: (url: string, init?: Omit<RequestInit, 'method'>) =>
+      authFetch(url, { ...init, method: 'DELETE' }),
+  };
+}
+
+/**
+ * Pre-configured API client with CSRF and auth protection
+ */
+export const authApi = createAuthFetch();

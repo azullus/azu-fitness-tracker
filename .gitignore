@@ -56,3 +56,4 @@ data/
 # Backups
 backups/
 *.backup
+.claude/settings.local.json

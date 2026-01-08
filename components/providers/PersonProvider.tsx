@@ -16,7 +16,7 @@ import { useAuth } from '@/components/providers/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import { DEMO_PERSONS as RICH_DEMO_PERSONS } from '@/lib/demo-data';
 import { useToastActions } from '@/components/ui/Toast';
-import { csrfFetch } from '@/lib/csrf-client';
+import { authFetch } from '@/lib/csrf-client';
 
 // Use demo data from demo-data.ts (single demo user with history)
 const DEMO_PERSONS: Person[] = RICH_DEMO_PERSONS;
@@ -117,7 +117,7 @@ export function PersonProvider({ children }: PersonProviderProps) {
     // ALWAYS use API endpoint - it handles SQLite vs Supabase logic on the backend
     // This allows Supabase auth with SQLite data storage
     try {
-      const response = await fetch('/api/persons');
+      const response = await authFetch('/api/persons');
       if (response.ok) {
         const json = await response.json();
         // Handle both direct array response and { data: [] } wrapper
@@ -205,8 +205,8 @@ export function PersonProvider({ children }: PersonProviderProps) {
   // Delete a person
   const deletePerson = useCallback(async (id: string): Promise<void> => {
     try {
-      // Call API to delete person (with CSRF protection)
-      const response = await csrfFetch(`/api/persons?id=${id}`, {
+      // Call API to delete person (with CSRF and auth protection)
+      const response = await authFetch(`/api/persons?id=${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -347,7 +347,7 @@ export function PersonProvider({ children }: PersonProviderProps) {
 
           // Create each person via API
           for (const personData of newPersons) {
-            const response = await csrfFetch('/api/persons', {
+            const response = await authFetch('/api/persons', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
