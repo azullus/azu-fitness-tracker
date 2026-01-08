@@ -80,8 +80,17 @@ export async function getAuthFromRequest(request: NextRequest): Promise<AuthResu
       };
     }
 
-    // Get user's household from profile
-    const { data: profile } = await supabase
+    // Create an authenticated client with the user's token for RLS to work
+    const authenticatedClient = createClient(supabaseUrl!, supabaseAnonKey!, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    });
+
+    // Get user's household from profile using authenticated client
+    const { data: profile } = await authenticatedClient
       .from('profiles')
       .select('household_id')
       .eq('id', user.id)

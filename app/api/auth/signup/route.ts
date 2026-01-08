@@ -103,49 +103,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Step 2: Create household
-    // Note: households table has RLS disabled as a workaround, so this should work
-    const householdName = `${displayName || email.split('@')[0]}'s Household`;
-    const { data: household, error: householdError } = await adminClient
-      .from('households')
-      .insert({ name: householdName })
-      .select()
-      .single();
-
-    if (householdError) {
-      console.error('Failed to create household:', householdError);
-      // Return error since household is needed for profile
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Household creation failed: ${householdError.message}`,
-        },
-        { status: 500 }
-      );
-    }
-
-    // Step 3: Create profile linked to household
-    // Note: profiles has RLS policy allowing users to insert their own profile
-    const { error: profileError } = await adminClient.from('profiles').insert({
-      id: authData.user.id,
-      household_id: household.id,
-      display_name: displayName || email.split('@')[0],
-    });
-
-    if (profileError) {
-      console.error('Failed to create profile:', profileError);
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Profile creation failed: ${profileError.message}`,
-        },
-        { status: 500 }
-      );
-    }
-
-    console.log(
-      `Successfully created user ${authData.user.id} with household ${household.id}`
-    );
+    // Note: Household and profile are created automatically by the database trigger
+    // `handle_new_user` on auth.users table. No need to create them here.
+    console.log(`Successfully created user ${authData.user.id} - profile and household created by database trigger`);
 
     return NextResponse.json({
       success: true,
