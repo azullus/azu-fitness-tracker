@@ -20,6 +20,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { authFetch } from '@/lib/csrf-client';
 import type { Person } from '@/lib/types';
 
 export default function HouseholdSettingsPage() {
@@ -92,7 +93,7 @@ export default function HouseholdSettingsPage() {
 
     const personData = newPersons[0]; // Single person mode returns one person
 
-    if (!supabase || !profile?.household_id) {
+    if (!isAuthEnabled) {
       // Demo mode - use local addPerson
       addPerson(personData);
       setShowAddPersonWizard(false);
@@ -103,29 +104,37 @@ export default function HouseholdSettingsPage() {
 
     setError(null);
     try {
-      const { error } = await supabase
-        .from('persons')
-        .insert({
+      // Use authFetch to create person via API
+      const response = await authFetch('/api/persons', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           name: personData.name,
           gender: personData.gender,
           age: personData.age,
           height: personData.height,
           weight: personData.weight,
           bmi: personData.bmi,
-          daily_calorie_target: personData.dailyCalorieTarget,
+          dailyCalorieTarget: personData.dailyCalorieTarget,
           training_focus: personData.training_focus,
-          workout_days_per_week: personData.workoutDaysPerWeek,
-          household_id: profile.household_id,
-        });
+          workoutDaysPerWeek: personData.workoutDaysPerWeek,
+        }),
+      });
 
-      if (error) throw error;
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to add person');
+      }
+
       setShowAddPersonWizard(false);
       setSuccess('Person added to household!');
       setTimeout(() => setSuccess(null), 3000);
       // Reload page to refresh persons list
       window.location.reload();
-    } catch {
-      setError('Failed to add person');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add person');
       setShowAddPersonWizard(false);
     }
   };
@@ -137,7 +146,7 @@ export default function HouseholdSettingsPage() {
       return;
     }
 
-    if (!supabase) {
+    if (!isAuthEnabled) {
       // Demo mode
       updatePerson(personId, { name: editingPersonName });
       setEditingPersonId(null);
@@ -148,18 +157,26 @@ export default function HouseholdSettingsPage() {
 
     setError(null);
     try {
-      const { error } = await supabase
-        .from('persons')
-        .update({ name: editingPersonName })
-        .eq('id', personId);
+      // Use authFetch to update person via API
+      const response = await authFetch(`/api/persons?id=${personId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: editingPersonName }),
+      });
 
-      if (error) throw error;
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to update person');
+      }
+
       setEditingPersonId(null);
       setSuccess('Person updated!');
       setTimeout(() => setSuccess(null), 3000);
       window.location.reload();
-    } catch {
-      setError('Failed to update person');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update person');
     }
   };
 
@@ -171,80 +188,28 @@ export default function HouseholdSettingsPage() {
 
     setError(null);
 
-    // Retry logic for CSRF token issues
-    const maxRetries = 2;
-    let lastError: Error | null = null;
+    try {
+      // Use authFetch which includes both auth token and CSRF token
+      const response = await authFetch(`/api/persons?id=${personId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      try {
-        // Get fresh CSRF token
-        const csrfResponse = await fetch('/api/csrf', {
-          method: 'GET',
-          credentials: 'same-origin', // Ensure cookies are sent
-          cache: 'no-store', // Always fetch fresh token
-        });
+      const data = await response.json();
 
-        if (!csrfResponse.ok) {
-          throw new Error('Failed to get CSRF token');
-        }
-
-        const csrfData = await csrfResponse.json();
-        const token = csrfData.token;
-
-        if (!token) {
-          throw new Error('CSRF token not returned');
-        }
-
-        // Use API route (handles both SQLite and Supabase)
-        const response = await fetch(`/api/persons?id=${personId}`, {
-          method: 'DELETE',
-          credentials: 'same-origin', // Ensure CSRF cookie is sent
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': token,
-          },
-        });
-
-        const data = await response.json();
-
-        // If CSRF error and retries remaining, try again
-        if (response.status === 403 && data.error?.includes('CSRF') && attempt < maxRetries) {
-          console.warn(`CSRF token mismatch on attempt ${attempt + 1}, retrying...`);
-          // Clear any stale cookies
-          document.cookie.split(";").forEach((c) => {
-            if (c.trim().startsWith('csrf-token')) {
-              document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-            }
-          });
-          // Wait a bit before retry
-          await new Promise(resolve => setTimeout(resolve, 500));
-          continue;
-        }
-
-        if (!response.ok || !data.success) {
-          throw new Error(data.error || 'Failed to delete person');
-        }
-
-        // Success!
-        setSuccess('Person removed from household');
-        setTimeout(() => setSuccess(null), 3000);
-        window.location.reload();
-        return;
-
-      } catch (err) {
-        lastError = err instanceof Error ? err : new Error('Failed to remove person');
-
-        // If not a CSRF error or no retries left, break
-        if (attempt >= maxRetries || !lastError.message.includes('CSRF')) {
-          break;
-        }
-
-        console.warn(`Attempt ${attempt + 1} failed, retrying...`, lastError);
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to delete person');
       }
-    }
 
-    // All retries failed
-    setError(lastError?.message || 'Failed to remove person after multiple attempts');
+      // Success!
+      setSuccess('Person removed from household');
+      setTimeout(() => setSuccess(null), 3000);
+      window.location.reload();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to remove person');
+    }
   };
 
   if (isLoading) {
