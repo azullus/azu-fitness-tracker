@@ -199,13 +199,17 @@ export async function checkPersonAccess(
 }
 
 // Extended auth result with demo mode flag
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface ExtendedAuthResult extends AuthResult {
   isDemoMode: boolean;
+  // The Supabase client is typed as 'any' to avoid complex generic type issues
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabaseClient?: any;
 }
 
 /**
  * Authenticate API request - handles both demo mode and authenticated mode
- * Returns auth info or an error response
+ * Returns auth info (including authenticated Supabase client) or an error response
  */
 export async function authenticateRequest(
   request: NextRequest
@@ -220,24 +224,76 @@ export async function authenticateRequest(
     };
   }
 
-  const authResult = await getAuthFromRequest(request);
-
-  // Token was provided but auth failed
-  if (!authResult.authenticated) {
+  // Supabase must be configured if not in demo/SQLite mode
+  if (!isSupabaseConfigured()) {
     return {
       error: NextResponse.json(
-        { success: false, error: authResult.error || 'Unauthorized' },
+        { success: false, error: 'Authentication not configured' },
+        { status: 503 }
+      ),
+    };
+  }
+
+  // Get the authorization header or cookie
+  const authHeader = request.headers.get('authorization');
+  const accessToken = authHeader?.replace('Bearer ', '') ||
+    request.cookies.get('sb-access-token')?.value;
+
+  if (!accessToken) {
+    return {
+      error: NextResponse.json(
+        { success: false, error: 'No authentication token provided' },
         { status: 401 }
       ),
     };
   }
 
-  return {
-    auth: {
-      ...authResult,
-      isDemoMode: false,
+  // Create authenticated client with user's token
+  const authenticatedClient = createClient(supabaseUrl!, supabaseAnonKey!, {
+    global: {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
     },
-  };
+  });
+
+  try {
+    // Verify the token and get user
+    const { data: { user }, error } = await authenticatedClient.auth.getUser(accessToken);
+
+    if (error || !user) {
+      return {
+        error: NextResponse.json(
+          { success: false, error: error?.message || 'Invalid or expired token' },
+          { status: 401 }
+        ),
+      };
+    }
+
+    // Get user's household from profile
+    const { data: profile } = await authenticatedClient
+      .from('profiles')
+      .select('household_id')
+      .eq('id', user.id)
+      .single();
+
+    return {
+      auth: {
+        authenticated: true,
+        userId: user.id,
+        householdId: profile?.household_id || undefined,
+        isDemoMode: false,
+        supabaseClient: authenticatedClient,
+      },
+    };
+  } catch {
+    return {
+      error: NextResponse.json(
+        { success: false, error: 'Authentication failed' },
+        { status: 401 }
+      ),
+    };
+  }
 }
 
 /**

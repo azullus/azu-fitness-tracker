@@ -43,23 +43,37 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Check if Supabase is configured
-    if (isSupabaseConfigured()) {
-      const { data, error } = await getSupabase()
+    // Use authenticated Supabase client if available
+    if (auth.supabaseClient) {
+      const { data, error } = await auth.supabaseClient
         .from('persons')
         .select('*')
         .order('name', { ascending: true });
 
       if (error) {
         // For authenticated users, return empty array on error (triggers onboarding)
-        // For demo mode users, fall back to demo data
-        if (!auth.isDemoMode) {
-          return NextResponse.json({
-            success: true,
-            data: [],
-            source: 'supabase',
-          });
-        }
+        return NextResponse.json({
+          success: true,
+          data: [],
+          source: 'supabase',
+        });
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: data as Person[],
+        source: 'supabase',
+      });
+    }
+
+    // Fallback: Check if Supabase is configured (for demo mode)
+    if (isSupabaseConfigured() && auth.isDemoMode) {
+      const { data, error } = await getSupabase()
+        .from('persons')
+        .select('*')
+        .order('name', { ascending: true });
+
+      if (error) {
         return NextResponse.json({
           success: true,
           data: DEMO_PERSONS,
@@ -189,10 +203,10 @@ export async function POST(request: NextRequest) {
       }, { status: 201 });
     }
 
-    // Check if Supabase is configured
-    if (!isSupabaseConfigured()) {
+    // Must have authenticated client for Supabase operations
+    if (!auth.supabaseClient) {
       return NextResponse.json(
-        { success: false, error: 'Database not configured. Running in demo mode.' },
+        { success: false, error: 'Database not configured or authentication failed' },
         { status: 503 }
       );
     }
@@ -204,7 +218,8 @@ export async function POST(request: NextRequest) {
     const heightM = height / 100;
     const calculatedBmi = weightKg / Math.pow(heightM, 2);
 
-    const { data, error } = await getSupabase()
+    // Use authenticated client and user's household from auth (not from request body)
+    const { data, error } = await auth.supabaseClient
       .from('persons')
       .insert([{
         name,
@@ -216,14 +231,15 @@ export async function POST(request: NextRequest) {
         daily_calorie_target: dailyCalorieTarget || 2000,
         training_focus,
         workout_days_per_week: workoutDaysPerWeek || 4,
-        household_id: householdId || null,
+        household_id: auth.householdId || null,
       }])
       .select()
       .single();
 
     if (error) {
+      console.error('Failed to create person:', error);
       return NextResponse.json(
-        { success: false, error: 'Failed to create person' },
+        { success: false, error: `Failed to create person: ${error.message}` },
         { status: 500 }
       );
     }
@@ -319,15 +335,15 @@ export async function PUT(request: NextRequest) {
       });
     }
 
-    // Check if Supabase is configured
-    if (!isSupabaseConfigured()) {
+    // Must have authenticated client for Supabase operations
+    if (!auth.supabaseClient) {
       return NextResponse.json(
-        { success: false, error: 'Database not configured. Running in demo mode.' },
+        { success: false, error: 'Database not configured or authentication failed' },
         { status: 503 }
       );
     }
 
-    const { data, error } = await getSupabase()
+    const { data, error } = await auth.supabaseClient
       .from('persons')
       .update(body)
       .eq('id', id)
@@ -335,8 +351,9 @@ export async function PUT(request: NextRequest) {
       .single();
 
     if (error) {
+      console.error('Failed to update person:', error);
       return NextResponse.json(
-        { success: false, error: 'Failed to update person' },
+        { success: false, error: `Failed to update person: ${error.message}` },
         { status: 500 }
       );
     }
@@ -412,22 +429,23 @@ export async function DELETE(request: NextRequest) {
       });
     }
 
-    // Check if Supabase is configured
-    if (!isSupabaseConfigured()) {
+    // Must have authenticated client for Supabase operations
+    if (!auth.supabaseClient) {
       return NextResponse.json(
-        { success: false, error: 'Database not configured. Running in demo mode.' },
+        { success: false, error: 'Database not configured or authentication failed' },
         { status: 503 }
       );
     }
 
-    const { error } = await getSupabase()
+    const { error } = await auth.supabaseClient
       .from('persons')
       .delete()
       .eq('id', id);
 
     if (error) {
+      console.error('Failed to delete person:', error);
       return NextResponse.json(
-        { success: false, error: 'Failed to delete person' },
+        { success: false, error: `Failed to delete person: ${error.message}` },
         { status: 500 }
       );
     }

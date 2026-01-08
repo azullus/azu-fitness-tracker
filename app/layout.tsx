@@ -6,7 +6,6 @@ import { CSRFProvider } from '@/components/providers/CSRFProvider';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import { AppInitializer } from '@/components/providers/AppInitializer';
 import { ToastProvider } from '@/components/ui/Toast';
-import { DemoModeBanner } from '@/components/ui/DemoModeBanner';
 import BottomNav from '@/components/navigation/BottomNav';
 import ServiceWorkerRegister from './sw-register';
 
@@ -72,7 +71,6 @@ export default function RootLayout({
               <CSRFProvider>
                 <AuthProvider>
                   <PersonProvider>
-                    <DemoModeBanner />
                     <main className="min-h-screen pb-20">
                       {children}
                     </main>
