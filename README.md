@@ -833,18 +833,6 @@ Coverage: 119 tests across 4 test suites
 
 ## 🔗 Related Projects
 
-### Web Applications (Similar Stack)
-- **[budget-tracker](https://github.com/azullus/budget-tracker)** - Next.js 14 PWA for personal finance tracking with offline-first architecture
-
-### Infrastructure & Deployment
-- **[docker-infrastructure](https://github.com/azullus/docker-infrastructure)** - Docker Compose IaC for self-hosted deployments with Traefik
-- **[cosmicbytez-ops-toolkit](https://github.com/azullus/cosmicbytez-ops-toolkit)** - PowerShell automation for IT operations
-- **[cosmicbytez-homelab](https://github.com/azullus/cosmicbytez-homelab)** - Home lab infrastructure and media server documentation
-
-### Security Operations
-- **[cosmicbytez-secops](https://github.com/azullus/cosmicbytez-secops)** - Security operations, PNPT training, and ethical hacking resources
-
-### DevOps Tools
 - **[bc-docker-manager](https://github.com/azullus/bc-docker-manager)** - Electron desktop app for Business Central Docker containers
 - **[CosmicPing](https://github.com/azullus/CosmicPing)** - Network diagnostic tool with real-time charting
 
