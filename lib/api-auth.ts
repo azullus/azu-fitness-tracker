@@ -280,6 +280,9 @@ export async function authorizePersonAccess(
 /**
  * Check if user can access household data
  * In demo mode or if user has household access, returns true
+ *
+ * Note: We trust auth.householdId which was already retrieved using the
+ * authenticated client in getAuthFromRequest. No need to re-query.
  */
 export async function authorizeHouseholdAccess(
   auth: ExtendedAuthResult,
@@ -305,15 +308,22 @@ export async function authorizeHouseholdAccess(
     return { authorized: true };
   }
 
-  const hasAccess = await checkHouseholdAccess(auth.userId, householdId);
-  if (!hasAccess) {
-    return {
-      error: NextResponse.json(
-        { success: false, error: 'Access denied to this household\'s data' },
-        { status: 403 }
-      ),
-    };
+  // Compare with the household already retrieved from the authenticated session
+  // This avoids re-querying with anon key which would be blocked by RLS
+  if (auth.householdId && auth.householdId === householdId) {
+    return { authorized: true };
   }
 
-  return { authorized: true };
+  // For SQLite mode, allow all authenticated users
+  if (isSQLiteEnabled()) {
+    return { authorized: true };
+  }
+
+  // User's household doesn't match the requested household
+  return {
+    error: NextResponse.json(
+      { success: false, error: 'Access denied to this household\'s data' },
+      { status: 403 }
+    ),
+  };
 }

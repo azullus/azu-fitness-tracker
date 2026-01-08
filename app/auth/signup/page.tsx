@@ -42,10 +42,7 @@ export default function SignUpPage() {
       const result = await signUp(email, password, displayName || undefined);
       if (result.success) {
         setSuccess(true);
-        // Redirect after a short delay to show success message
-        setTimeout(() => {
-          router.push('/');
-        }, 2000);
+        // Don't redirect - user needs to confirm their email first
       } else {
         setError(result.error || 'Failed to sign up');
       }
@@ -91,14 +88,25 @@ export default function SignUpPage() {
           {success ? (
             <div className="text-center py-8">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 mb-4">
-                <CheckCircle className="w-8 h-8" />
+                <Mail className="w-8 h-8" />
               </div>
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                Account Created!
+                Check Your Email
               </h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Redirecting you to the app...
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                We&apos;ve sent a confirmation link to <strong>{email}</strong>
               </p>
+              <p className="text-sm text-gray-500 dark:text-gray-500">
+                Please click the link in the email to verify your account, then you can sign in.
+              </p>
+              <div className="mt-6">
+                <Link
+                  href="/auth/login"
+                  className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+                >
+                  Go to Sign In
+                </Link>
+              </div>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">

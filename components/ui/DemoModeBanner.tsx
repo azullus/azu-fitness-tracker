@@ -13,10 +13,11 @@ interface DemoModeBannerProps {
 /**
  * Banner that displays when the app is running in demo mode
  * Shows connection status and provides retry/sign-up options
+ * Does NOT show for authenticated users - they should see onboarding instead
  */
 export function DemoModeBanner({ className }: DemoModeBannerProps) {
   const { isDemoMode, connectionError, retryConnection } = usePerson();
-  const { isAuthEnabled } = useAuth();
+  const { isAuthEnabled, isAuthenticated } = useAuth();
   const [dismissed, setDismissed] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -28,8 +29,8 @@ export function DemoModeBanner({ className }: DemoModeBannerProps) {
     setDismissed(wasDismissed);
   }, []);
 
-  // Don't render on server or if not in demo mode
-  if (!mounted || !isDemoMode || dismissed) {
+  // Don't render on server, for authenticated users, or if not in demo mode
+  if (!mounted || !isDemoMode || dismissed || isAuthenticated) {
     return null;
   }
 
@@ -68,15 +69,10 @@ export function DemoModeBanner({ className }: DemoModeBannerProps) {
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-            Demo Mode Active
-          </p>
-          <p className="mt-0.5 text-sm text-amber-700 dark:text-amber-300">
+          <p className="text-sm text-amber-700 dark:text-amber-300">
             {connectionError
               ? `Connection failed: ${connectionError}. Your data is stored locally and will not persist.`
-              : isAuthEnabled
-                ? 'Unable to connect to the database. Your data is stored locally and will not persist.'
-                : 'Running without a database connection. Sign up for a free account to save your fitness data.'}
+              : 'Running without a database connection. Sign up for a free account to save your fitness data.'}
           </p>
 
           {/* Action buttons */}
