@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { clsx } from 'clsx';
 import { UtensilsCrossed, Plus, Check } from 'lucide-react';
 import type { Meal } from '@/lib/types';
@@ -39,14 +39,14 @@ const mealTypeStyles = {
   },
 };
 
-export function MealCard({ meal, compact = false, showLogButton = true, onLogged }: MealCardProps) {
+function MealCardComponent({ meal, compact = false, showLogButton = true, onLogged }: MealCardProps) {
   const currentPerson = useCurrentPerson();
   const [isLogging, setIsLogging] = useState(false);
   const [justLogged, setJustLogged] = useState(false);
 
   const mealStyle = mealTypeStyles[meal.meal_type];
 
-  const handleLogMeal = async () => {
+  const handleLogMeal = useCallback(async () => {
     if (!currentPerson || isLogging) return;
 
     setIsLogging(true);
@@ -90,7 +90,7 @@ export function MealCard({ meal, compact = false, showLogButton = true, onLogged
     } finally {
       setIsLogging(false);
     }
-  };
+  }, [currentPerson, isLogging, meal, onLogged]);
 
   const hasNutrition =
     meal.calories !== undefined ||
@@ -266,3 +266,6 @@ export function MealCard({ meal, compact = false, showLogButton = true, onLogged
     </div>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders when parent updates
+export const MealCard = memo(MealCardComponent);

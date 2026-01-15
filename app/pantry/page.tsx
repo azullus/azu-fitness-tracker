@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import Header from '@/components/navigation/Header';
 import { PantryItemCard } from '@/components/cards';
 import { Button, ConfirmDialog } from '@/components/ui';
-import { AddPantryItemModal } from '@/components/modals';
+import { LazyAddPantryItemModal } from '@/components/modals';
 import { DEMO_PANTRY_ITEMS } from '@/lib/demo-data';
 import {
   initializePantryWithDemoData,
@@ -332,8 +332,8 @@ export default function PantryPage() {
         onCancel={cancelDeleteItem}
       />
 
-      {/* Add Item Modal */}
-      <AddPantryItemModal
+      {/* Add Item Modal - Lazy loaded to reduce initial bundle */}
+      <LazyAddPantryItemModal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         onSave={handleSaveNewItem}

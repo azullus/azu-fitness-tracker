@@ -2,16 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 import { isSQLiteEnabled, getWorkouts as getSQLiteWorkouts, createWorkout as createSQLiteWorkout, updateWorkout as updateSQLiteWorkout, deleteWorkout as deleteSQLiteWorkout, getWorkoutById } from '@/lib/database';
 import { getWorkoutsByPerson } from '@/lib/demo-data';
-import { authenticateRequest, authorizePersonAccess } from '@/lib/api-auth';
-import { validateDateRange, validateWorkoutData, validatePersonExists, formatValidationErrors } from '@/lib/validation';
+import { authenticateRequest, authorizePersonAccess, validateAndAuthorizePersonAccess } from '@/lib/api-auth';
+import { validateDateRange, validateWorkoutData, formatValidationErrors } from '@/lib/validation';
 import { withCSRFProtection } from '@/lib/csrf';
 import { applyRateLimit, RateLimitPresets } from '@/lib/rate-limit';
+import { getCacheHeaders } from '@/lib/cache-headers';
+import { getPaginationParams, paginateArray, createPaginatedResponse } from '@/lib/pagination';
 import type { Workout, Exercise } from '@/lib/types';
 
 /**
  * GET /api/workouts
  * Query workouts by person_id (required query param)
  * Optional date filter
+ * Supports pagination: ?page=1&limit=50
  */
 export async function GET(request: NextRequest) {
   try {
@@ -31,6 +34,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const personId = searchParams.get('person_id');
     const date = searchParams.get('date');
+
+    // Get pagination parameters
+    const pagination = getPaginationParams(request);
 
     if (!personId) {
       return NextResponse.json(
@@ -58,19 +64,32 @@ export async function GET(request: NextRequest) {
 
     // Check if SQLite is enabled
     if (isSQLiteEnabled()) {
-      const workouts = getSQLiteWorkouts(personId, date || undefined);
+      const allWorkouts = getSQLiteWorkouts(personId, date || undefined);
+      const paginatedResult = paginateArray(allWorkouts, pagination);
       return NextResponse.json({
         success: true,
-        data: workouts,
+        ...paginatedResult,
         source: 'sqlite',
+      }, {
+        headers: getCacheHeaders('PRIVATE_SHORT'),
       });
     }
 
     // Check if Supabase is configured
     if (isSupabaseConfigured()) {
+      // First get total count for pagination
+      let countQuery = getSupabase()
+        .from('workouts')
+        .select('id', { count: 'exact', head: true })
+        .eq('person_id', personId);
+      if (date) countQuery = countQuery.eq('date', date);
+
+      const { count: totalCount } = await countQuery;
+
+      // Use explicit columns to avoid overfetching
       let query = getSupabase()
         .from('workouts')
-        .select('*')
+        .select('id, person_id, date, type, exercises, duration_minutes, intensity, notes, completed, created_at')
         .eq('person_id', personId)
         .order('date', { ascending: false });
 
@@ -78,22 +97,28 @@ export async function GET(request: NextRequest) {
         query = query.eq('date', date);
       }
 
+      // Apply pagination
+      query = query.range(pagination.offset, pagination.offset + pagination.limit - 1);
+
       const { data, error } = await query;
 
       if (error) {
         // Fall back to demo data on error
-        return getFilteredDemoData(personId, date);
+        return getFilteredDemoData(personId, date, pagination);
       }
 
+      const paginatedResult = createPaginatedResponse(data as Workout[], totalCount || 0, pagination);
       return NextResponse.json({
         success: true,
-        data: data as Workout[],
+        ...paginatedResult,
         source: 'supabase',
+      }, {
+        headers: getCacheHeaders('PRIVATE_SHORT'),
       });
     }
 
     // No database configured, use demo data
-    return getFilteredDemoData(personId, date);
+    return getFilteredDemoData(personId, date, pagination);
   } catch {
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
@@ -173,19 +198,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate person exists (foreign key validation)
-    const personValidation = await validatePersonExists(person_id);
-    if (!personValidation.valid) {
-      return NextResponse.json(
-        { success: false, error: personValidation.error },
-        { status: 400 }
-      );
-    }
-
-    // Authorize access to this person's data
-    const personAuth = await authorizePersonAccess(auth, person_id);
-    if ('error' in personAuth) {
-      return personAuth.error;
+    // Validate person exists and authorize access in single query
+    const personResult = await validateAndAuthorizePersonAccess(auth, person_id);
+    if ('error' in personResult) {
+      return personResult.error;
     }
 
     // Check if SQLite is enabled
@@ -541,7 +557,11 @@ export async function DELETE(request: NextRequest) {
 /**
  * Helper function to filter demo workouts
  */
-function getFilteredDemoData(personId: string, date: string | null) {
+function getFilteredDemoData(
+  personId: string,
+  date: string | null,
+  pagination: { page: number; limit: number; offset: number }
+) {
   let workouts = getWorkoutsByPerson(personId);
 
   if (date) {
@@ -551,9 +571,12 @@ function getFilteredDemoData(personId: string, date: string | null) {
   // Sort by date descending
   workouts.sort((a, b) => b.date.localeCompare(a.date));
 
+  const paginatedResult = paginateArray(workouts, pagination);
   return NextResponse.json({
     success: true,
-    data: workouts,
+    ...paginatedResult,
     source: 'demo',
+  }, {
+    headers: getCacheHeaders('PRIVATE_SHORT'),
   });
 }

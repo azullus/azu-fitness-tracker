@@ -2,16 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 import { isSQLiteEnabled, getWeightEntries, createWeightEntry, deleteWeightEntry, upsertWeightEntry, getWeightEntryById } from '@/lib/database';
 import { getWeightEntriesByPerson } from '@/lib/demo-data';
-import { authenticateRequest, authorizePersonAccess } from '@/lib/api-auth';
-import { validateDateRange, validateWeightEntryData, validatePersonExists, formatValidationErrors } from '@/lib/validation';
+import { authenticateRequest, authorizePersonAccess, validateAndAuthorizePersonAccess } from '@/lib/api-auth';
+import { validateDateRange, validateWeightEntryData, formatValidationErrors } from '@/lib/validation';
 import { withCSRFProtection } from '@/lib/csrf';
 import { applyRateLimit, RateLimitPresets } from '@/lib/rate-limit';
+import { getCacheHeaders } from '@/lib/cache-headers';
+import { getPaginationParams, paginateArray, createPaginatedResponse } from '@/lib/pagination';
 import type { WeightEntry } from '@/lib/types';
 
 /**
  * GET /api/weight
  * Query weight entries by person_id (required query param)
  * Optional date range filtering with start_date and end_date
+ * Supports pagination: ?page=1&limit=50
  */
 export async function GET(request: NextRequest) {
   try {
@@ -32,6 +35,9 @@ export async function GET(request: NextRequest) {
     const personId = searchParams.get('person_id');
     const startDate = searchParams.get('start_date');
     const endDate = searchParams.get('end_date');
+
+    // Get pagination parameters
+    const pagination = getPaginationParams(request);
 
     if (!personId) {
       return NextResponse.json(
@@ -69,19 +75,33 @@ export async function GET(request: NextRequest) {
 
     // Check if SQLite is enabled
     if (isSQLiteEnabled()) {
-      const entries = getWeightEntries(personId, startDate || undefined, endDate || undefined);
+      const allEntries = getWeightEntries(personId, startDate || undefined, endDate || undefined);
+      const paginatedResult = paginateArray(allEntries, pagination);
       return NextResponse.json({
         success: true,
-        data: entries,
+        ...paginatedResult,
         source: 'sqlite',
+      }, {
+        headers: getCacheHeaders('PRIVATE_SHORT'),
       });
     }
 
     // Check if Supabase is configured
     if (isSupabaseConfigured()) {
+      // First get total count for pagination
+      let countQuery = getSupabase()
+        .from('weight_entries')
+        .select('id', { count: 'exact', head: true })
+        .eq('person_id', personId);
+      if (startDate) countQuery = countQuery.gte('date', startDate);
+      if (endDate) countQuery = countQuery.lte('date', endDate);
+
+      const { count: totalCount } = await countQuery;
+
+      // Use explicit columns to avoid overfetching
       let query = getSupabase()
         .from('weight_entries')
-        .select('*')
+        .select('id, person_id, date, weight_lbs, notes, created_at')
         .eq('person_id', personId)
         .order('date', { ascending: false });
 
@@ -92,22 +112,28 @@ export async function GET(request: NextRequest) {
         query = query.lte('date', endDate);
       }
 
+      // Apply pagination
+      query = query.range(pagination.offset, pagination.offset + pagination.limit - 1);
+
       const { data, error } = await query;
 
       if (error) {
         // Fall back to demo data on error
-        return getFilteredDemoData(personId, startDate, endDate);
+        return getFilteredDemoData(personId, startDate, endDate, pagination);
       }
 
+      const paginatedResult = createPaginatedResponse(data as WeightEntry[], totalCount || 0, pagination);
       return NextResponse.json({
         success: true,
-        data: data as WeightEntry[],
+        ...paginatedResult,
         source: 'supabase',
+      }, {
+        headers: getCacheHeaders('PRIVATE_SHORT'),
       });
     }
 
     // No database configured, use demo data
-    return getFilteredDemoData(personId, startDate, endDate);
+    return getFilteredDemoData(personId, startDate, endDate, pagination);
   } catch {
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
@@ -177,19 +203,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate person exists (foreign key validation)
-    const personValidation = await validatePersonExists(person_id);
-    if (!personValidation.valid) {
-      return NextResponse.json(
-        { success: false, error: personValidation.error },
-        { status: 400 }
-      );
-    }
-
-    // Authorize access to this person's data
-    const personAuth = await authorizePersonAccess(auth, person_id);
-    if ('error' in personAuth) {
-      return personAuth.error;
+    // Validate person exists and authorize access in single query
+    const personResult = await validateAndAuthorizePersonAccess(auth, person_id);
+    if ('error' in personResult) {
+      return personResult.error;
     }
 
     // Check if SQLite is enabled
@@ -313,19 +330,10 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Validate person exists (foreign key validation)
-    const personValidation = await validatePersonExists(person_id);
-    if (!personValidation.valid) {
-      return NextResponse.json(
-        { success: false, error: personValidation.error },
-        { status: 400 }
-      );
-    }
-
-    // Authorize access to this person's data
-    const personAuth = await authorizePersonAccess(auth, person_id);
-    if ('error' in personAuth) {
-      return personAuth.error;
+    // Validate person exists and authorize access in single query
+    const personResult = await validateAndAuthorizePersonAccess(auth, person_id);
+    if ('error' in personResult) {
+      return personResult.error;
     }
 
     // Check if SQLite is enabled
@@ -574,7 +582,8 @@ export async function DELETE(request: NextRequest) {
 function getFilteredDemoData(
   personId: string,
   startDate: string | null,
-  endDate: string | null
+  endDate: string | null,
+  pagination: { page: number; limit: number; offset: number }
 ) {
   let entries = getWeightEntriesByPerson(personId);
 
@@ -588,9 +597,12 @@ function getFilteredDemoData(
   // Sort by date descending
   entries.sort((a, b) => b.date.localeCompare(a.date));
 
+  const paginatedResult = paginateArray(entries, pagination);
   return NextResponse.json({
     success: true,
-    data: entries,
+    ...paginatedResult,
     source: 'demo',
+  }, {
+    headers: getCacheHeaders('PRIVATE_SHORT'),
   });
 }

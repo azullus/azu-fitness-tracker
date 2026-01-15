@@ -6,6 +6,7 @@ import { authenticateRequest, authorizeHouseholdAccess } from '@/lib/api-auth';
 import { validateRecipeData, formatValidationErrors } from '@/lib/validation';
 import { withCSRFProtection } from '@/lib/csrf';
 import { applyRateLimit, RateLimitPresets } from '@/lib/rate-limit';
+import { getCacheHeaders } from '@/lib/cache-headers';
 import type { Recipe } from '@/lib/types';
 
 /**
@@ -57,13 +58,17 @@ export async function GET(request: NextRequest) {
         success: true,
         data: recipes,
         source: 'sqlite',
+      }, {
+        headers: getCacheHeaders('PUBLIC_LONG'),
       });
     }
 
     // Check if Supabase is configured
     if (isSupabaseConfigured()) {
-      // Build Supabase query
-      let query = getSupabase().from('recipes').select('*');
+      // Build Supabase query with explicit columns to avoid overfetching
+      let query = getSupabase().from('recipes').select(
+        'id, name, description, category, prep_time_minutes, cook_time_minutes, servings, ingredients, instructions, nutrition, tags, difficulty, created_at'
+      );
 
       if (category) {
         query = query.eq('category', category);
@@ -98,6 +103,8 @@ export async function GET(request: NextRequest) {
         success: true,
         data: recipes,
         source: 'supabase',
+      }, {
+        headers: getCacheHeaders('PUBLIC_LONG'),
       });
     }
 
@@ -122,6 +129,8 @@ export async function GET(request: NextRequest) {
       success: true,
       data: filteredRecipes,
       source: 'demo',
+    }, {
+      headers: getCacheHeaders('PUBLIC_LONG'),
     });
   } catch {
     return NextResponse.json(

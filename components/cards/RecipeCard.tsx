@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { clsx } from 'clsx';
 import { ChefHat, Clock, Users, Flame, Dumbbell, Minus, Plus, Scale, UtensilsCrossed } from 'lucide-react';
 import type { Recipe } from '@/lib/types';
@@ -36,7 +36,7 @@ const difficultyColors: Record<string, { bg: string; text: string; darkBg: strin
   hard: { bg: 'bg-red-100', text: 'text-red-700', darkBg: 'dark:bg-red-900/30', darkText: 'dark:text-red-400' },
 };
 
-export function RecipeCard({ recipe, onClick, showScaling = false, householdSize = 2, showLogButton = false }: RecipeCardProps) {
+function RecipeCardComponent({ recipe, onClick, showScaling = false, householdSize = 2, showLogButton = false }: RecipeCardProps) {
   const currentPerson = useCurrentPerson();
   const [servings, setServings] = useState(householdSize);
   const [showLogMeal, setShowLogMeal] = useState(false);
@@ -47,10 +47,18 @@ export function RecipeCard({ recipe, onClick, showScaling = false, householdSize
   const categoryStyle = categoryColors[recipe.category];
   const isScaled = servings !== recipe.baseServings;
 
-  const adjustServings = (delta: number) => {
-    const newServings = Math.max(1, Math.min(8, servings + delta));
-    setServings(newServings);
-  };
+  const adjustServings = useCallback((delta: number) => {
+    setServings(prev => Math.max(1, Math.min(8, prev + delta)));
+  }, []);
+
+  const handleShowLogMeal = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowLogMeal(true);
+  }, []);
+
+  const handleCloseLogMeal = useCallback(() => {
+    setShowLogMeal(false);
+  }, []);
 
   // Calculate per-serving macros (guard against division by zero)
   const servingsDivisor = scaledRecipe.servings > 0 ? scaledRecipe.servings : 1;
@@ -258,10 +266,7 @@ export function RecipeCard({ recipe, onClick, showScaling = false, householdSize
       {showLogButton && currentPerson && (
         <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowLogMeal(true);
-            }}
+            onClick={handleShowLogMeal}
             className={clsx(
               'w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg',
               'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400',
@@ -279,7 +284,7 @@ export function RecipeCard({ recipe, onClick, showScaling = false, householdSize
       {showLogButton && currentPerson && (
         <LogRecipeMeal
           isOpen={showLogMeal}
-          onClose={() => setShowLogMeal(false)}
+          onClose={handleCloseLogMeal}
           recipe={scaledRecipe}
           personId={currentPerson.id}
         />
@@ -287,3 +292,6 @@ export function RecipeCard({ recipe, onClick, showScaling = false, householdSize
     </div>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders when parent updates
+export const RecipeCard = memo(RecipeCardComponent);

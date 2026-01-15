@@ -126,44 +126,42 @@ export default function DashboardPage() {
     };
   }, []);
 
-  // Load workouts from localStorage and combine with demo data
+  // Load workouts and weight entries in parallel
   useEffect(() => {
     if (!personId || !mounted) {
       setWorkouts([]);
-      return;
-    }
-
-    // Only load demo data if not authenticated
-    const demoWorkouts = isAuthenticated ? [] : getDemoWorkoutsByPerson(personId);
-    const storedWorkouts = getStoredWorkouts(personId);
-
-    const allWorkouts = [...storedWorkouts, ...demoWorkouts].sort((a, b) => {
-      const dateCompare = new Date(b.date).getTime() - new Date(a.date).getTime();
-      if (dateCompare !== 0) return dateCompare;
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-    });
-
-    setWorkouts(allWorkouts);
-  }, [personId, mounted, refreshTrigger, isAuthenticated]);
-
-  // Load weight entries from localStorage and combine with demo data
-  useEffect(() => {
-    if (!personId || !mounted) {
       setWeightEntries([]);
       return;
     }
 
-    // Only load demo data if not authenticated
-    const demoEntries = isAuthenticated ? [] : getDemoWeightEntriesByPerson(personId);
-    const storedEntries = getStoredWeightEntries(personId);
+    // Load both datasets in parallel
+    const loadData = () => {
+      // Only load demo data if not authenticated
+      const demoWorkouts = isAuthenticated ? [] : getDemoWorkoutsByPerson(personId);
+      const storedWorkouts = getStoredWorkouts(personId);
+      const demoEntries = isAuthenticated ? [] : getDemoWeightEntriesByPerson(personId);
+      const storedEntries = getStoredWeightEntries(personId);
 
-    const allEntries = [...storedEntries, ...demoEntries].sort((a, b) => {
-      const dateCompare = new Date(b.date).getTime() - new Date(a.date).getTime();
-      if (dateCompare !== 0) return dateCompare;
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-    });
+      // Process workouts
+      const allWorkouts = [...storedWorkouts, ...demoWorkouts].sort((a, b) => {
+        const dateCompare = new Date(b.date).getTime() - new Date(a.date).getTime();
+        if (dateCompare !== 0) return dateCompare;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
 
-    setWeightEntries(allEntries);
+      // Process weight entries
+      const allEntries = [...storedEntries, ...demoEntries].sort((a, b) => {
+        const dateCompare = new Date(b.date).getTime() - new Date(a.date).getTime();
+        if (dateCompare !== 0) return dateCompare;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+
+      // Update state in a single batch
+      setWorkouts(allWorkouts);
+      setWeightEntries(allEntries);
+    };
+
+    loadData();
   }, [personId, mounted, refreshTrigger, isAuthenticated]);
 
   const lowStockItems = useMemo(() => getLowStockItems(), []);
@@ -212,18 +210,24 @@ export default function DashboardPage() {
     ? (latestWeight - previousWeight).toFixed(1)
     : null;
 
-  // Count workouts this week
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
-  const workoutsThisWeek = workouts.filter(w => {
-    const workoutDate = new Date(w.date);
-    return isWithinInterval(workoutDate, { start: weekStart, end: weekEnd });
-  });
-  const completedThisWeek = workoutsThisWeek.filter(w => w.completed).length;
-  const plannedThisWeek = workoutsThisWeek.length;
+  // Count workouts this week - memoize to avoid recalculating on every render
+  const { completedThisWeek, plannedThisWeek } = useMemo(() => {
+    const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const weekEnd = endOfWeek(new Date(), { weekStartsOn: 1 });
+    const filtered = workouts.filter(w => {
+      const workoutDate = new Date(w.date);
+      return isWithinInterval(workoutDate, { start: weekStart, end: weekEnd });
+    });
+    return {
+      completedThisWeek: filtered.filter(w => w.completed).length,
+      plannedThisWeek: filtered.length,
+    };
+  }, [workouts]);
 
-  // Today's workout - check logged workouts first, then scheduled
-  const todaysLoggedWorkout = workouts.find(w => isToday(new Date(w.date)));
+  // Today's workout - memoize to avoid searching array on every render
+  const todaysLoggedWorkout = useMemo(() => {
+    return workouts.find(w => isToday(new Date(w.date)));
+  }, [workouts]);
 
   // Memoize scheduled workout to ensure it recalculates when person changes
   const scheduledWorkout = useMemo(() => {

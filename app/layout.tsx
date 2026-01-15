@@ -4,6 +4,7 @@ import { AuthProvider } from '@/components/providers/AuthProvider';
 import { PersonProvider } from '@/components/providers/PersonProvider';
 import { CSRFProvider } from '@/components/providers/CSRFProvider';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
+import { QueryProvider } from '@/components/providers/QueryProvider';
 import { AppInitializer } from '@/components/providers/AppInitializer';
 import { ToastProvider } from '@/components/ui/Toast';
 import BottomNav from '@/components/navigation/BottomNav';
@@ -70,18 +71,20 @@ export default function RootLayout({
       <body className="antialiased bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
         <AppInitializer>
           <ThemeProvider defaultTheme="system">
-            <ToastProvider>
-              <CSRFProvider>
-                <AuthProvider>
-                  <PersonProvider>
-                    <main className="min-h-screen pb-20">
-                      {children}
-                    </main>
-                    <BottomNav />
-                  </PersonProvider>
-                </AuthProvider>
-              </CSRFProvider>
-            </ToastProvider>
+            <QueryProvider>
+              <ToastProvider>
+                <CSRFProvider>
+                  <AuthProvider>
+                    <PersonProvider>
+                      <main className="min-h-screen pb-20">
+                        {children}
+                      </main>
+                      <BottomNav />
+                    </PersonProvider>
+                  </AuthProvider>
+                </CSRFProvider>
+              </ToastProvider>
+            </QueryProvider>
           </ThemeProvider>
         </AppInitializer>
         <ServiceWorkerRegister />

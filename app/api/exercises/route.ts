@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getWorkoutExercises, getPersonByName } from '@/lib/db';
+import { getCacheHeaders } from '@/lib/cache-headers';
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,10 +28,14 @@ export async function GET(request: NextRequest) {
         }
         byDay[ex.day_of_week].push(ex);
       }
-      return NextResponse.json(byDay);
+      return NextResponse.json(byDay, {
+        headers: getCacheHeaders('PUBLIC_LONG'),
+      });
     }
 
-    return NextResponse.json(exercises);
+    return NextResponse.json(exercises, {
+      headers: getCacheHeaders('PUBLIC_LONG'),
+    });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

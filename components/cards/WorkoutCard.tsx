@@ -2,7 +2,7 @@
 
 import { clsx } from 'clsx';
 import { Dumbbell, Clock, CheckCircle2, Circle, ChevronDown, ChevronUp, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useCallback, memo } from 'react';
 import type { Workout } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
 
@@ -31,7 +31,7 @@ const intensityStyles = {
   },
 };
 
-export function WorkoutCard({
+function WorkoutCardComponent({
   workout,
   onToggleComplete,
   onDelete,
@@ -43,21 +43,21 @@ export function WorkoutCard({
   const intensity = workout.intensity ?? 'medium';
   const intensityStyle = intensityStyles[intensity];
 
-  const handleToggleComplete = () => {
+  const handleToggleComplete = useCallback(() => {
     if (onToggleComplete) {
       onToggleComplete(workout.id);
     }
-  };
+  }, [onToggleComplete, workout.id]);
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     if (onDelete) {
       onDelete(workout.id);
     }
-  };
+  }, [onDelete, workout.id]);
 
-  const handleToggleExpand = () => {
-    setIsExpanded(!isExpanded);
-  };
+  const handleToggleExpand = useCallback(() => {
+    setIsExpanded(prev => !prev);
+  }, []);
 
   return (
     <div
@@ -237,3 +237,6 @@ export function WorkoutCard({
     </div>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders when parent updates
+export const WorkoutCard = memo(WorkoutCardComponent);

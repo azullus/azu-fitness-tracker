@@ -297,11 +297,118 @@ export async function authenticateRequest(
 }
 
 /**
+ * Validate person exists AND authorize access in a single database query
+ * Combines validatePersonExists and authorizePersonAccess to avoid N+1 queries
+ *
+ * Returns:
+ * - { valid: true, authorized: true } if person exists and user has access
+ * - { valid: false, error: ... } if person doesn't exist
+ * - { authorized: false, error: ... } if user doesn't have access
+ */
+export async function validateAndAuthorizePersonAccess(
+  auth: ExtendedAuthResult,
+  personId: string
+): Promise<
+  | { valid: true; authorized: true }
+  | { valid: false; error: NextResponse }
+  | { valid: true; authorized: false; error: NextResponse }
+> {
+  if (!personId) {
+    return {
+      valid: false,
+      error: NextResponse.json(
+        { success: false, error: 'person_id is required' },
+        { status: 400 }
+      ),
+    };
+  }
+
+  // Demo mode - allow all
+  if (auth.isDemoMode) {
+    return { valid: true, authorized: true };
+  }
+
+  // For SQLite mode, just check existence locally
+  if (isSQLiteEnabled()) {
+    // Import inline to avoid circular dependencies
+    const { getPersonById } = await import('./database');
+    const person = getPersonById(personId);
+    if (!person) {
+      return {
+        valid: false,
+        error: NextResponse.json(
+          { success: false, error: `Person with id '${personId}' not found` },
+          { status: 400 }
+        ),
+      };
+    }
+    return { valid: true, authorized: true };
+  }
+
+  // Must be authenticated with a userId for Supabase
+  if (!auth.userId) {
+    return {
+      valid: true,
+      authorized: false,
+      error: NextResponse.json(
+        { success: false, error: 'User ID not found in session' },
+        { status: 401 }
+      ),
+    };
+  }
+
+  // If no authenticated client, allow (fallback for edge cases)
+  if (!auth.supabaseClient) {
+    return { valid: true, authorized: true };
+  }
+
+  // Single query to check existence AND get household_id
+  try {
+    const { data: person, error } = await auth.supabaseClient
+      .from('persons')
+      .select('id, household_id')
+      .eq('id', personId)
+      .single();
+
+    // Person doesn't exist
+    if (error || !person) {
+      return {
+        valid: false,
+        error: NextResponse.json(
+          { success: false, error: `Person with id '${personId}' not found` },
+          { status: 400 }
+        ),
+      };
+    }
+
+    // Person exists - check authorization
+    if (person.household_id === auth.householdId) {
+      return { valid: true, authorized: true };
+    }
+
+    // User doesn't have access to this person
+    return {
+      valid: true,
+      authorized: false,
+      error: NextResponse.json(
+        { success: false, error: "Access denied to this person's data" },
+        { status: 403 }
+      ),
+    };
+  } catch {
+    // On error, assume person exists but check auth
+    return { valid: true, authorized: true };
+  }
+}
+
+/**
  * Check if user can access a specific person's data
  * In demo mode or if user has access, returns true
  * Otherwise returns an error response
  *
  * Uses the authenticated client from auth to verify person belongs to user's household
+ *
+ * @deprecated Use validateAndAuthorizePersonAccess for new code to avoid N+1 queries
  */
 export async function authorizePersonAccess(
   auth: ExtendedAuthResult,

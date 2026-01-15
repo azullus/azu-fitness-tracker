@@ -5,7 +5,7 @@ import { X, Plus, ChevronDown, Check, BookOpen, Clock, Camera } from 'lucide-rea
 import { clsx } from 'clsx';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { BarcodeScannerModal } from '@/components/scanner';
+import { LazyBarcodeScannerModal } from '@/components/scanner';
 import { addFoodEntry, addRecentFood, getRecentFoods, type MealType, type FoodEntry, type RecentFood } from '@/lib/food-log';
 
 interface QuickAddFoodProps {
@@ -540,8 +540,8 @@ export function QuickAddFood({
         </form>
       </div>
 
-      {/* Barcode Scanner Modal */}
-      <BarcodeScannerModal
+      {/* Barcode Scanner Modal - Lazy loaded to reduce initial bundle */}
+      <LazyBarcodeScannerModal
         isOpen={showScanner}
         onClose={() => setShowScanner(false)}
         onFoodScanned={handleScannedFood}

@@ -2,15 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 import { isSQLiteEnabled, getMeals as getSQLiteMeals, createMeal as createSQLiteMeal, deleteMeal as deleteSQLiteMeal, getMealById } from '@/lib/database';
 import { DEMO_MEALS } from '@/lib/demo-data';
-import { authenticateRequest, authorizePersonAccess } from '@/lib/api-auth';
-import { validateDateRange, validateMealData, validatePersonExists, formatValidationErrors } from '@/lib/validation';
+import { authenticateRequest, authorizePersonAccess, validateAndAuthorizePersonAccess } from '@/lib/api-auth';
+import { validateDateRange, validateMealData, formatValidationErrors } from '@/lib/validation';
 import { withCSRFProtection } from '@/lib/csrf';
 import { applyRateLimit, RateLimitPresets } from '@/lib/rate-limit';
+import { getCacheHeaders } from '@/lib/cache-headers';
+import { getPaginationParams, paginateArray, createPaginatedResponse } from '@/lib/pagination';
 import type { Meal } from '@/lib/types';
 
 /**
  * GET /api/meals
- * Query meals by date (required), optional meal_type filter
+ * Query meals by date, optional meal_type filter
+ * Supports pagination: ?page=1&limit=50
  * Falls back to DEMO_MEALS when Supabase is not configured
  */
 export async function GET(request: NextRequest) {
@@ -32,6 +35,9 @@ export async function GET(request: NextRequest) {
     const date = searchParams.get('date');
     const mealType = searchParams.get('meal_type');
     const personId = searchParams.get('person_id');
+
+    // Get pagination parameters
+    const pagination = getPaginationParams(request);
 
     // Validate date format if provided
     if (date) {
@@ -65,18 +71,31 @@ export async function GET(request: NextRequest) {
 
     // Check if SQLite is enabled
     if (isSQLiteEnabled()) {
-      const meals = getSQLiteMeals(date || undefined, mealType || undefined, personId || undefined);
+      const allMeals = getSQLiteMeals(date || undefined, mealType || undefined, personId || undefined);
+      const paginatedResult = paginateArray(allMeals, pagination);
       return NextResponse.json({
         success: true,
-        data: meals,
+        ...paginatedResult,
         source: 'sqlite',
+      }, {
+        headers: getCacheHeaders('PRIVATE_SHORT'),
       });
     }
 
     // Check if Supabase is configured
     if (isSupabaseConfigured()) {
-      // Build Supabase query
-      let query = getSupabase().from('meals').select('*');
+      // First get total count for pagination
+      let countQuery = getSupabase().from('meals').select('id', { count: 'exact', head: true });
+      if (date) countQuery = countQuery.eq('date', date);
+      if (mealType) countQuery = countQuery.eq('meal_type', mealType);
+      if (personId) countQuery = countQuery.eq('person_id', personId);
+
+      const { count: totalCount } = await countQuery;
+
+      // Build Supabase query with explicit columns to avoid overfetching
+      let query = getSupabase().from('meals').select(
+        'id, person_id, date, meal_type, name, description, calories, protein_g, carbs_g, fat_g, fiber_g, created_at'
+      );
 
       if (date) {
         query = query.eq('date', date);
@@ -86,8 +105,15 @@ export async function GET(request: NextRequest) {
         query = query.eq('meal_type', mealType);
       }
 
+      if (personId) {
+        query = query.eq('person_id', personId);
+      }
+
       // Order by created_at to maintain meal order
       query = query.order('created_at', { ascending: true });
+
+      // Apply pagination
+      query = query.range(pagination.offset, pagination.offset + pagination.limit - 1);
 
       const { data, error } = await query;
 
@@ -98,10 +124,13 @@ export async function GET(request: NextRequest) {
         );
       }
 
+      const paginatedResult = createPaginatedResponse(data as Meal[], totalCount || 0, pagination);
       return NextResponse.json({
         success: true,
-        data: data as Meal[],
+        ...paginatedResult,
         source: 'supabase',
+      }, {
+        headers: getCacheHeaders('PRIVATE_SHORT'),
       });
     }
 
@@ -116,10 +145,17 @@ export async function GET(request: NextRequest) {
       filteredMeals = filteredMeals.filter((meal) => meal.meal_type === mealType);
     }
 
+    if (personId) {
+      filteredMeals = filteredMeals.filter((meal) => meal.person_id === personId);
+    }
+
+    const paginatedResult = paginateArray(filteredMeals, pagination);
     return NextResponse.json({
       success: true,
-      data: filteredMeals,
+      ...paginatedResult,
       source: 'demo',
+    }, {
+      headers: getCacheHeaders('PRIVATE_SHORT'),
     });
   } catch {
     return NextResponse.json(
@@ -199,19 +235,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // If person_id provided, validate it exists and authorize access
+    // If person_id provided, validate existence and authorize access in single query
     if (body.person_id) {
-      const personValidation = await validatePersonExists(body.person_id);
-      if (!personValidation.valid) {
-        return NextResponse.json(
-          { success: false, error: personValidation.error },
-          { status: 400 }
-        );
-      }
-
-      const personAuth = await authorizePersonAccess(auth, body.person_id);
-      if ('error' in personAuth) {
-        return personAuth.error;
+      const personResult = await validateAndAuthorizePersonAccess(auth, body.person_id);
+      if ('error' in personResult) {
+        return personResult.error;
       }
     }
 

@@ -6,6 +6,7 @@ import { authenticateRequest, authorizeHouseholdAccess, authorizePersonAccess } 
 import { validatePersonData, formatValidationErrors } from '@/lib/validation';
 import { withCSRFProtection } from '@/lib/csrf';
 import { applyRateLimit, RateLimitPresets } from '@/lib/rate-limit';
+import { getCacheHeaders } from '@/lib/cache-headers';
 import type { Person } from '@/lib/types';
 
 // Map Supabase snake_case columns to frontend camelCase
@@ -59,6 +60,8 @@ export async function GET(request: NextRequest) {
         success: true,
         data: persons,
         source: 'sqlite',
+      }, {
+        headers: getCacheHeaders('PRIVATE_SHORT'),
       });
     }
 
@@ -75,6 +78,8 @@ export async function GET(request: NextRequest) {
           success: true,
           data: [],
           source: 'supabase',
+        }, {
+          headers: getCacheHeaders('PRIVATE_SHORT'),
         });
       }
 
@@ -85,6 +90,8 @@ export async function GET(request: NextRequest) {
         success: true,
         data: mappedPersons,
         source: 'supabase',
+      }, {
+        headers: getCacheHeaders('PRIVATE_SHORT'),
       });
     }
 
@@ -100,6 +107,8 @@ export async function GET(request: NextRequest) {
           success: true,
           data: DEMO_PERSONS,
           source: 'demo',
+        }, {
+          headers: getCacheHeaders('PRIVATE_SHORT'),
         });
       }
 
@@ -110,6 +119,8 @@ export async function GET(request: NextRequest) {
         success: true,
         data: mappedPersons,
         source: 'supabase',
+      }, {
+        headers: getCacheHeaders('PRIVATE_SHORT'),
       });
     }
 
@@ -119,6 +130,8 @@ export async function GET(request: NextRequest) {
         success: true,
         data: DEMO_PERSONS,
         source: 'demo',
+      }, {
+        headers: getCacheHeaders('PRIVATE_SHORT'),
       });
     }
     // Authenticated users with no database get empty array
@@ -126,6 +139,8 @@ export async function GET(request: NextRequest) {
       success: true,
       data: [],
       source: 'api',
+    }, {
+      headers: getCacheHeaders('PRIVATE_SHORT'),
     });
   } catch {
     // On error, return empty array (triggers onboarding for new users)
