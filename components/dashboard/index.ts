@@ -14,6 +14,8 @@ export type { WorkoutStatusProps, ScheduledWorkout as WorkoutScheduledWorkout } 
 export { LowStockAlerts } from './LowStockAlerts';
 export type { LowStockAlertsProps } from './LowStockAlerts';
 
+export { ShoppingList } from './ShoppingList';
+
 export { QuickActions } from './QuickActions';
 
 export { TodaysMeals, WeeklySummary } from './DailyOverview';

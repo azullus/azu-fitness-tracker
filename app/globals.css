@@ -127,6 +127,11 @@
     --theme-button-hover: 244, 63, 94; /* rose-500 */
   }
 
+  html, body {
+    overflow-x: hidden;
+    overscroll-behavior: none; /* Prevent pull-to-refresh and horizontal overscroll */
+  }
+
   body {
     color: rgb(var(--foreground-rgb));
     background: rgb(var(--background-rgb));

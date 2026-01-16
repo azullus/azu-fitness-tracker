@@ -68,7 +68,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+      <body className="antialiased bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 overflow-x-hidden">
         <AppInitializer>
           <ThemeProvider defaultTheme="system">
             <QueryProvider>

@@ -40,6 +40,7 @@ import {
   QuickActions,
   TodaysMeals,
   WeeklySummary,
+  ShoppingList,
 } from '@/components/dashboard';
 
 // Calculate workout streak (consecutive days with completed workouts)
@@ -113,16 +114,28 @@ export default function DashboardPage() {
   }, [mounted, isAuthEnabled, authLoading, isAuthenticated]);
 
   // Refresh data when page becomes visible (user navigates back)
+  // Debounced to prevent rapid re-triggers from pull-to-refresh gestures
   useEffect(() => {
+    let debounceTimeout: NodeJS.Timeout | null = null;
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        setRefreshTrigger((prev) => prev + 1);
+        // Debounce to prevent stuck loading from rapid visibility changes
+        if (debounceTimeout) {
+          clearTimeout(debounceTimeout);
+        }
+        debounceTimeout = setTimeout(() => {
+          setRefreshTrigger((prev) => prev + 1);
+        }, 100);
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
+      }
     };
   }, []);
 
@@ -333,6 +346,9 @@ export default function DashboardPage() {
           mealCounts={mealCounts}
           dailyTotals={dailyTotals}
         />
+
+        {/* Shopping List Widget */}
+        <ShoppingList />
 
         {/* Weight Widget */}
         <WeightSummary
