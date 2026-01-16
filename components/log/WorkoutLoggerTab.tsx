@@ -6,9 +6,6 @@ import { isToday } from 'date-fns';
 import { clsx } from 'clsx';
 import {
   Dumbbell,
-  ShoppingCart,
-  Plus,
-  Minus,
   Check,
   ChevronDown,
   ChevronUp,
@@ -16,15 +13,9 @@ import {
 import { Button } from '@/components/ui';
 import { WorkoutStreak } from '@/components/tracking';
 import { createWorkoutFromRoutine, markWorkoutComplete } from '@/lib/workout-log';
-import { DEMO_PANTRY_ITEMS } from '@/lib/demo-data';
 import { ALL_ROUTINES, type WorkoutRoutine } from '@/lib/workouts';
 import { captureException, captureWarning } from '@/lib/error-monitoring';
-import type { Person, Workout, PantryItem } from '@/lib/types';
-
-// Helper to get pantry item display name (handles both 'name' and 'item' field names)
-function getPantryItemName(item: PantryItem): string {
-  return item.name || item.item || 'Unknown';
-}
+import type { Person, Workout } from '@/lib/types';
 
 interface WorkoutLoggerTabProps {
   personId: string | undefined;
@@ -101,21 +92,6 @@ export function WorkoutLoggerTab({
     return matchingRoutines.slice(0, 3);
   }, [currentPerson, scheduledWorkoutType]);
 
-  // Pantry state
-  const [pantryItems, setPantryItems] = useState<PantryItem[]>(DEMO_PANTRY_ITEMS);
-  const [selectedUsedItem, setSelectedUsedItem] = useState<string>('');
-  const [selectedBoughtItem, setSelectedBoughtItem] = useState<string>('');
-  const [pantryFeedback, setPantryFeedback] = useState<{ type: 'used' | 'bought'; item: string } | null>(null);
-
-  // Common pantry items for quick buttons (handle both 'name' and 'item' field names)
-  const commonItems = useMemo(() => {
-    const commonNames = ['Eggs', 'Greek Yogurt (Plain)', 'Chicken Breast (Frozen)', 'Protein Powder (Whey)', 'BUILT Marshmallow Bars'];
-    return pantryItems.filter((item) => {
-      const itemName = item.name || item.item || '';
-      return commonNames.includes(itemName);
-    });
-  }, [pantryItems]);
-
   // Handlers
   const handleMarkWorkoutComplete = useCallback(() => {
     if (!todaysWorkout) return;
@@ -152,57 +128,6 @@ export function WorkoutLoggerTab({
       });
     }
   }, [personId, onWorkoutRefresh]);
-
-  const handleUsedItem = useCallback(() => {
-    if (!selectedUsedItem) return;
-
-    setPantryItems((prev) =>
-      prev.map((item) =>
-        item.id === selectedUsedItem
-          ? { ...item, quantity: Math.max(0, item.quantity - 1) }
-          : item
-      )
-    );
-
-    const item = pantryItems.find((i) => i.id === selectedUsedItem);
-    setPantryFeedback({ type: 'used', item: item?.name ?? '' });
-    setSelectedUsedItem('');
-    setTimeout(() => setPantryFeedback(null), 2000);
-  }, [selectedUsedItem, pantryItems]);
-
-  const handleBoughtItem = useCallback(() => {
-    if (!selectedBoughtItem) return;
-
-    setPantryItems((prev) =>
-      prev.map((item) =>
-        item.id === selectedBoughtItem
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      )
-    );
-
-    const item = pantryItems.find((i) => i.id === selectedBoughtItem);
-    setPantryFeedback({ type: 'bought', item: item?.name ?? '' });
-    setSelectedBoughtItem('');
-    setTimeout(() => setPantryFeedback(null), 2000);
-  }, [selectedBoughtItem, pantryItems]);
-
-  const handleQuickPantryUpdate = useCallback((itemId: string, delta: number) => {
-    setPantryItems((prev) =>
-      prev.map((item) =>
-        item.id === itemId
-          ? { ...item, quantity: Math.max(0, item.quantity + delta) }
-          : item
-      )
-    );
-
-    const item = pantryItems.find((i) => i.id === itemId);
-    setPantryFeedback({
-      type: delta > 0 ? 'bought' : 'used',
-      item: item?.name ?? '',
-    });
-    setTimeout(() => setPantryFeedback(null), 2000);
-  }, [pantryItems]);
 
   return (
     <>
@@ -379,125 +304,6 @@ export function WorkoutLoggerTab({
           personId={personId}
         />
       )}
-
-      {/* Quick Pantry Updates Section */}
-      <section className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-100 dark:border-gray-700">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="p-2 bg-green-100 dark:bg-green-900/40 rounded-lg">
-            <ShoppingCart className="w-5 h-5 text-green-600 dark:text-green-400" />
-          </div>
-          <h2 className="font-semibold text-gray-900 dark:text-white">Quick Pantry Updates</h2>
-        </div>
-
-        {/* Feedback message */}
-        {pantryFeedback && (
-          <div
-            className={clsx(
-              'mb-4 p-2 rounded-lg text-sm text-center',
-              pantryFeedback.type === 'used'
-                ? 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-400'
-                : 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400'
-            )}
-          >
-            {pantryFeedback.type === 'used' ? 'Used' : 'Added'} {pantryFeedback.item}
-          </div>
-        )}
-
-        {/* Used Item */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Used Item
-          </label>
-          <div className="flex gap-2">
-            <select
-              value={selectedUsedItem}
-              onChange={(e) => setSelectedUsedItem(e.target.value)}
-              className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            >
-              <option value="">Select item...</option>
-              {pantryItems
-                .filter((item) => item.quantity > 0)
-                .map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {getPantryItemName(item)} ({item.quantity} {item.unit})
-                  </option>
-                ))}
-            </select>
-            <Button
-              onClick={handleUsedItem}
-              variant="secondary"
-              size="md"
-              disabled={!selectedUsedItem}
-            >
-              <Minus className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Bought Item */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Bought Item
-          </label>
-          <div className="flex gap-2">
-            <select
-              value={selectedBoughtItem}
-              onChange={(e) => setSelectedBoughtItem(e.target.value)}
-              className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            >
-              <option value="">Select item...</option>
-              {pantryItems.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name} ({item.quantity} {item.unit})
-                </option>
-              ))}
-            </select>
-            <Button
-              onClick={handleBoughtItem}
-              variant="secondary"
-              size="md"
-              disabled={!selectedBoughtItem}
-            >
-              <Plus className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Quick buttons for common items */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Quick Actions
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {commonItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden"
-              >
-                <button
-                  onClick={() => handleQuickPantryUpdate(item.id, -1)}
-                  className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                  aria-label={`Use one ${getPantryItemName(item)}`}
-                  disabled={item.quantity <= 0}
-                >
-                  <Minus className="w-3 h-3 text-gray-700 dark:text-gray-300" />
-                </button>
-                <span className="text-xs px-1 min-w-[80px] text-center truncate text-gray-700 dark:text-gray-300">
-                  {getPantryItemName(item).split(' ')[0]}
-                  <span className="text-gray-500 dark:text-gray-400 ml-1">({item.quantity})</span>
-                </span>
-                <button
-                  onClick={() => handleQuickPantryUpdate(item.id, 1)}
-                  className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                  aria-label={`Add one ${getPantryItemName(item)}`}
-                >
-                  <Plus className="w-3 h-3 text-gray-700 dark:text-gray-300" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
     </>
   );
 }

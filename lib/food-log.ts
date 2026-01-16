@@ -259,6 +259,35 @@ export async function fetchDailyTotals(
   );
 }
 
+/**
+ * Fetch food entries grouped by meal type from Supabase
+ */
+export async function fetchFoodEntriesGroupedByMeal(
+  date: string,
+  personId?: string
+): Promise<Record<MealType, FoodEntry[]>> {
+  const entries = await fetchFoodEntriesForDate(date, personId);
+  const grouped: Record<MealType, FoodEntry[]> = {
+    breakfast: [],
+    lunch: [],
+    dinner: [],
+    snack: [],
+  };
+
+  entries.forEach((entry) => {
+    grouped[entry.mealType].push(entry);
+  });
+
+  // Sort entries within each meal by creation time
+  Object.keys(grouped).forEach((mealType) => {
+    grouped[mealType as MealType].sort(
+      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+  });
+
+  return grouped;
+}
+
 // ============================================================================
 // SYNC LOCALSTORAGE FUNCTIONS (Fallback)
 // ============================================================================

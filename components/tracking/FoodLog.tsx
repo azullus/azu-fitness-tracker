@@ -18,8 +18,8 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
   type FoodEntry,
   type MealType,
-  getFoodEntriesGroupedByMeal,
-  deleteFoodEntry,
+  fetchFoodEntriesGroupedByMeal,
+  removeFoodEntry,
 } from '@/lib/food-log';
 
 // LocalStorage key for collapsed state
@@ -120,10 +120,10 @@ const FoodItem = memo(function FoodItem({ entry, onDelete, onEdit }: FoodItemPro
     }
 
     // Wait for animation to complete
-    deleteTimeoutRef.current = setTimeout(() => {
+    deleteTimeoutRef.current = setTimeout(async () => {
       if (!isMountedRef.current) return; // Guard against unmounted component
       try {
-        deleteFoodEntry(entry.id);
+        await removeFoodEntry(entry.id);
         onDelete(entry);
       } catch {
         if (isMountedRef.current) {
@@ -484,6 +484,13 @@ export const FoodLog = memo(function FoodLog({
   const [, setRefreshCount] = useState(0);
   const [collapsedState, setCollapsedState] = useState<Record<MealType, boolean>>(() => getCollapsedState());
   const [isMounted, setIsMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [groupedEntries, setGroupedEntries] = useState<Record<MealType, FoodEntry[]>>({
+    breakfast: [],
+    lunch: [],
+    dinner: [],
+    snack: [],
+  });
 
   // Track when component is mounted (client-side) to handle hydration
   useEffect(() => {
@@ -495,13 +502,29 @@ export const FoodLog = memo(function FoodLog({
     setCollapsedState(getCollapsedState());
   }, []);
 
-  // Get entries grouped by meal type (filtered by person if provided)
-  // Include isMounted in dependencies to re-fetch after hydration
-  const groupedEntries = useMemo(() => {
-    // Use refreshTrigger and isMounted to force recalculation
-    void refreshTrigger;
-    void isMounted;
-    return getFoodEntriesGroupedByMeal(date, personId);
+  // Fetch entries from Supabase (with localStorage fallback)
+  useEffect(() => {
+    if (!isMounted) return;
+
+    let cancelled = false;
+    setIsLoading(true);
+
+    fetchFoodEntriesGroupedByMeal(date, personId)
+      .then((data) => {
+        if (!cancelled) {
+          setGroupedEntries(data);
+          setIsLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [date, personId, refreshTrigger, isMounted]);
 
   // Check if there are any entries
@@ -526,8 +549,8 @@ export const FoodLog = memo(function FoodLog({
     });
   }, []);
 
-  // Show loading state until hydration completes
-  if (!isMounted) {
+  // Show loading state until hydration completes or data is loading
+  if (!isMounted || isLoading) {
     return (
       <div className="py-8 px-4 text-center">
         <div className="w-8 h-8 mx-auto border-2 border-green-600 border-t-transparent rounded-full animate-spin" />

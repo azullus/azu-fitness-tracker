@@ -1,9 +1,10 @@
 'use client';
 
-import React from 'react';
-import { Dumbbell } from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { Dumbbell, Check } from 'lucide-react';
 import { clsx } from 'clsx';
 import { DashboardWidget } from './shared';
+import { markWorkoutComplete } from '@/lib/workout-log';
 import type { Workout, Person } from '@/lib/types';
 
 export interface ScheduledWorkout {
@@ -15,17 +16,42 @@ export interface WorkoutStatusProps {
   todaysLoggedWorkout?: Workout;
   scheduledWorkout: ScheduledWorkout | null;
   currentPerson: Person | null;
+  onWorkoutComplete?: () => void;
 }
 
 export function WorkoutStatus({
   todaysLoggedWorkout,
   scheduledWorkout,
   currentPerson,
+  onWorkoutComplete,
 }: WorkoutStatusProps) {
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [localCompleted, setLocalCompleted] = useState(false);
+
+  const isCompleted = localCompleted || todaysLoggedWorkout?.completed;
+
+  const handleMarkComplete = useCallback((e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigation to /workouts
+    e.stopPropagation();
+
+    if (!todaysLoggedWorkout || isCompleted || isCompleting) return;
+
+    setIsCompleting(true);
+    try {
+      markWorkoutComplete(todaysLoggedWorkout.id);
+      setLocalCompleted(true);
+      onWorkoutComplete?.();
+    } catch {
+      // Error handled silently
+    } finally {
+      setIsCompleting(false);
+    }
+  }, [todaysLoggedWorkout, isCompleted, isCompleting, onWorkoutComplete]);
+
   const getWorkoutStatus = () => {
     // Check logged workout first
     if (todaysLoggedWorkout) {
-      if (todaysLoggedWorkout.completed) {
+      if (isCompleted) {
         return { label: 'Completed', color: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400' };
       }
       return { label: 'In Progress', color: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400' };
@@ -49,7 +75,7 @@ export function WorkoutStatus({
       href="/workouts"
     >
       <div className="flex items-center justify-between">
-        <div>
+        <div className="flex-1">
           {todaysLoggedWorkout ? (
             <>
               <p className="text-lg font-medium text-gray-900 dark:text-white">
@@ -76,12 +102,29 @@ export function WorkoutStatus({
             </p>
           )}
         </div>
-        <span className={clsx(
-          'px-3 py-1.5 rounded-full text-xs font-medium',
-          workoutStatus.color
-        )}>
-          {workoutStatus.label}
-        </span>
+        <div className="flex items-center gap-2">
+          {/* Mark Complete button - only show when workout is in progress */}
+          {todaysLoggedWorkout && !isCompleted && (
+            <button
+              onClick={handleMarkComplete}
+              disabled={isCompleting}
+              className={clsx(
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
+                'bg-green-600 text-white hover:bg-green-700',
+                'disabled:opacity-50 disabled:cursor-not-allowed'
+              )}
+            >
+              <Check className="w-4 h-4" />
+              {isCompleting ? 'Saving...' : 'Complete'}
+            </button>
+          )}
+          <span className={clsx(
+            'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap',
+            workoutStatus.color
+          )}>
+            {workoutStatus.label}
+          </span>
+        </div>
       </div>
     </DashboardWidget>
   );

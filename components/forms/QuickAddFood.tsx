@@ -6,7 +6,7 @@ import { clsx } from 'clsx';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { LazyBarcodeScannerModal } from '@/components/scanner';
-import { addFoodEntry, addRecentFood, getRecentFoods, type MealType, type FoodEntry, type RecentFood } from '@/lib/food-log';
+import { saveFoodEntry, addRecentFood, getRecentFoods, type MealType, type FoodEntry, type RecentFood } from '@/lib/food-log';
 
 interface QuickAddFoodProps {
   isOpen: boolean;
@@ -134,7 +134,8 @@ export function QuickAddFood({
       setIsSubmitting(true);
 
       try {
-        const entry = addFoodEntry({
+        // Use async saveFoodEntry to persist to Supabase (with localStorage fallback)
+        const entry = await saveFoodEntry({
           personId,
           date,
           mealType,

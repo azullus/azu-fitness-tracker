@@ -7,9 +7,10 @@ import { DailyNutritionTracker, FoodLog } from '@/components/tracking';
 import { WaterIntakeTracker } from '@/components/tracking/WaterIntakeTracker';
 import { QuickAddFood, QuickAddFAB } from '@/components/forms';
 import {
-  calculateDailyTotals,
+  fetchDailyTotals,
   getNutritionTargets,
   type FoodEntry,
+  type DailyTotals,
 } from '@/lib/food-log';
 import type { Person } from '@/lib/types';
 
@@ -24,6 +25,13 @@ export function FoodLoggerTab({ personId, currentPerson }: FoodLoggerTabProps) {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [foodRefreshTrigger, setFoodRefreshTrigger] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
+  const [dailyTotals, setDailyTotals] = useState<DailyTotals>({
+    calories: 0,
+    protein: 0,
+    carbs: 0,
+    fat: 0,
+    fiber: 0,
+  });
 
   // Track when component is mounted to handle hydration for localStorage data
   useEffect(() => {
@@ -32,11 +40,25 @@ export function FoodLoggerTab({ personId, currentPerson }: FoodLoggerTabProps) {
 
   const foodDateString = format(foodDate, 'yyyy-MM-dd');
 
-  // Get nutrition data (filtered by person)
-  const dailyTotals = useMemo(() => {
-    void foodRefreshTrigger;
-    void isMounted;
-    return calculateDailyTotals(foodDateString, personId);
+  // Fetch nutrition data from Supabase (with localStorage fallback)
+  useEffect(() => {
+    if (!isMounted) return;
+
+    let cancelled = false;
+
+    fetchDailyTotals(foodDateString, personId)
+      .then((totals) => {
+        if (!cancelled) {
+          setDailyTotals(totals);
+        }
+      })
+      .catch(() => {
+        // Keep default totals on error
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [foodDateString, personId, foodRefreshTrigger, isMounted]);
 
   const nutritionTargets = useMemo(() => {

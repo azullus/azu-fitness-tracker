@@ -357,6 +357,7 @@ export default function DashboardPage() {
           todaysLoggedWorkout={todaysLoggedWorkout}
           scheduledWorkout={scheduledWorkout}
           currentPerson={currentPerson}
+          onWorkoutComplete={() => setRefreshTrigger((prev) => prev + 1)}
         />
 
         {/* Weekly Summary Widget */}
