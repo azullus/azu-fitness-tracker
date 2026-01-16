@@ -45,8 +45,7 @@ export async function GET(request: NextRequest) {
     if (error) throw error;
 
     return NextResponse.json(data || []);
-  } catch (error) {
-    console.error('Error fetching workout logs:', error);
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Failed to fetch workout logs' },
       { status: 500 }
@@ -119,8 +118,7 @@ export async function POST(request: NextRequest) {
     if (error) throw error;
 
     return NextResponse.json({ success: true, data });
-  } catch (error) {
-    console.error('Error logging workout:', error);
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Failed to log workout' },
       { status: 500 }

@@ -30,14 +30,23 @@ export const metadata: Metadata = {
     statusBarStyle: 'default',
     title: 'Fitness Tracker',
   },
+  openGraph: {
+    title: 'Fitness Tracker',
+    description: 'Track your fitness journey with workouts, meals, and progress',
+    type: 'website',
+    locale: 'en_US',
+    siteName: 'Fitness Tracker',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Fitness Tracker',
+    description: 'Track your fitness journey with workouts, meals, and progress',
+  },
 };
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  minimumScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   viewportFit: 'cover',
   themeColor: '#3b82f6',
 };
