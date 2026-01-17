@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
@@ -44,8 +45,8 @@ export default function DebugPage() {
       </div>
 
       <div className="mt-6 space-x-4">
-        <a href="/auth/login" className="text-blue-600 underline">Go to Login</a>
-        <a href="/" className="text-blue-600 underline">Go to Home</a>
+        <Link href="/auth/login" className="text-blue-600 underline">Go to Login</Link>
+        <Link href="/" className="text-blue-600 underline">Go to Home</Link>
       </div>
     </div>
   );
