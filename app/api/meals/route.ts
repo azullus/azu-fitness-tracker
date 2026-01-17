@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
-import { isSQLiteEnabled, getMeals as getSQLiteMeals, createMeal as createSQLiteMeal, deleteMeal as deleteSQLiteMeal, getMealById } from '@/lib/database';
+import { isSQLiteEnabled, getMeals as getSQLiteMeals, createMeal as createSQLiteMeal, deleteMeal as deleteSQLiteMeal, getMealById, updateMeal as updateSQLiteMeal } from '@/lib/database';
 import { DEMO_MEALS } from '@/lib/demo-data';
 import { authenticateRequest, authorizePersonAccess, validateAndAuthorizePersonAccess } from '@/lib/api-auth';
 import { validateDateRange, validateMealData, formatValidationErrors } from '@/lib/validation';
@@ -395,11 +395,38 @@ export async function PATCH(request: NextRequest) {
         }
       }
 
-      // SQLite doesn't have updateMeal, return not implemented
-      return NextResponse.json(
-        { success: false, error: 'Update not supported in SQLite mode' },
-        { status: 501 }
-      );
+      // Prepare update data (only include non-undefined fields)
+      const updateData: Record<string, unknown> = {};
+      if (updates.name !== undefined) updateData.name = updates.name;
+      if (updates.description !== undefined) updateData.description = updates.description;
+      if (updates.date !== undefined) updateData.date = updates.date;
+      if (updates.meal_type !== undefined) updateData.meal_type = updates.meal_type;
+      if (updates.calories !== undefined) updateData.calories = updates.calories;
+      if (updates.protein_g !== undefined) updateData.protein_g = updates.protein_g;
+      if (updates.carbs_g !== undefined) updateData.carbs_g = updates.carbs_g;
+      if (updates.fat_g !== undefined) updateData.fat_g = updates.fat_g;
+      if (updates.fiber_g !== undefined) updateData.fiber_g = updates.fiber_g;
+
+      if (Object.keys(updateData).length === 0) {
+        return NextResponse.json(
+          { success: false, error: 'No fields to update' },
+          { status: 400 }
+        );
+      }
+
+      const updatedMeal = updateSQLiteMeal(id, updateData);
+      if (!updatedMeal) {
+        return NextResponse.json(
+          { success: false, error: 'Failed to update meal' },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: updatedMeal,
+        source: 'sqlite',
+      });
     }
 
     // Check if Supabase is configured

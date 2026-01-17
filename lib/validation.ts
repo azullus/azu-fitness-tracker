@@ -13,6 +13,7 @@ import { DEMO_PERSONS } from '@/lib/demo-data';
 
 /**
  * Validates that a date string is in YYYY-MM-DD format
+ * Uses pure date component validation to avoid timezone issues
  */
 export function isValidDateFormat(dateString: string): boolean {
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
@@ -20,19 +21,35 @@ export function isValidDateFormat(dateString: string): boolean {
     return false;
   }
 
-  // Verify it's a valid date (e.g., not 2024-02-30)
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) {
+  // Parse the date components
+  const [year, month, day] = dateString.split('-').map(Number);
+
+  // Validate year is reasonable (1900-2100)
+  if (year < 1900 || year > 2100) {
     return false;
   }
 
-  // Ensure the parsed date matches the input (handles invalid dates like 2024-02-31)
-  const [year, month, day] = dateString.split('-').map(Number);
-  return (
-    date.getFullYear() === year &&
-    date.getMonth() === month - 1 &&
-    date.getDate() === day
-  );
+  // Validate month (1-12)
+  if (month < 1 || month > 12) {
+    return false;
+  }
+
+  // Validate day based on month
+  // Days in each month (index 0 = January)
+  const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+  // Check for leap year and adjust February
+  const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+  if (isLeapYear) {
+    daysInMonth[1] = 29;
+  }
+
+  // Validate day (1 to max days in the month)
+  if (day < 1 || day > daysInMonth[month - 1]) {
+    return false;
+  }
+
+  return true;
 }
 
 /**

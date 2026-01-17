@@ -526,6 +526,34 @@ export function getMealById(id: string): Meal | null {
   return row ? mapRowToMeal(row) : null;
 }
 
+export function updateMeal(id: string, updates: Partial<Meal>): Meal | null {
+  const database = getDatabase();
+  const existing = getMealById(id);
+  if (!existing) return null;
+
+  const updated = { ...existing, ...updates };
+
+  database.prepare(`
+    UPDATE meals SET
+      date = ?, meal_type = ?, name = ?, description = ?,
+      calories = ?, protein_g = ?, carbs_g = ?, fat_g = ?, fiber_g = ?
+    WHERE id = ?
+  `).run(
+    updated.date,
+    updated.meal_type,
+    updated.name,
+    updated.description || null,
+    updated.calories || null,
+    updated.protein_g || null,
+    updated.carbs_g || null,
+    updated.fat_g || null,
+    updated.fiber_g || null,
+    id
+  );
+
+  return getMealById(id);
+}
+
 // ============================================================================
 // PANTRY ITEMS CRUD OPERATIONS
 // ============================================================================
